@@ -51,7 +51,6 @@ class TestGates(unittest.TestCase):
         assert not_gate == False
 
 
-
 class TestBasicComponents(unittest.TestCase):
 
     def test_half_adder(self):
@@ -138,7 +137,7 @@ class TestBasicComponents(unittest.TestCase):
             # compare the carry-out value with the expected carry-out value
             assert carry_out == expected_carry_out, f"Expected carry_out {expected_carry_out}, got {carry_out}"
 
-        for i in range(100):
+        for i in range(1000):
             test_adder_once()
 
     def test_half_subtractor(self):
@@ -149,45 +148,13 @@ class TestBasicComponents(unittest.TestCase):
 
         for in1, in2 in zip(input1, input2):
             half_subtractor = HalfSubtractor(in1, in2)
-            expected_diff = xor(in1, in2)
-            expected_borrow = and_(not_(in1), in2)
-
-            self.assertEqual(half_subtractor.diff(), expected_diff)
-            self.assertEqual(half_subtractor.borrow(), expected_borrow)
-
-    def test_full_subtractor(self):
-        """Test various cases for FullSubtractor"""
-
-        input1 = [random.choice([True, False]) for x in range(100)]
-        input2 = [random.choice([True, False]) for x in range(100)]
-        borrow_in = [random.choice([True, False]) for x in range(100)]
-
-        for in1, in2, borrow in zip(input1, input2, borrow_in):
-            full_subtractor = FullSubtractor(in1, in2, borrow)
-
-            # Calculate expected diff and borrow
-            half_subtractor1 = HalfSubtractor(in1, in2)
-            half_subtractor2 = HalfSubtractor(half_subtractor1.diff(), borrow)
-
-            expected_diff = half_subtractor2.diff()
-            expected_borrow = or_(half_subtractor1.borrow(), half_subtractor2.borrow())
-
-            self.assertEqual(full_subtractor.diff(), expected_diff)
-            self.assertEqual(full_subtractor.borrow(), expected_borrow)
-
-
-    def test_half_subtractor(self):
-        """Test various cases for HalfSubtractor"""
-
-        input1 = [random.choice([True, False]) for x in range(100)]
-        input2 = [random.choice([True, False]) for x in range(100)]
-
-        for in1, in2 in zip(input1, input2):
-            half_subtractor = HalfSubtractor(in1, in2)
-            if in1 and not in2:
+            if in1 and in2:
+                assert half_subtractor.borrow() == False
+                assert half_subtractor.diff() == False
+            elif in1 and not in2:
                 assert half_subtractor.borrow() == False
                 assert half_subtractor.diff() == True
-            elif not in1 and in2:
+            elif in2 and not in1:
                 assert half_subtractor.borrow() == True
                 assert half_subtractor.diff() == True
             else:
@@ -203,28 +170,78 @@ class TestBasicComponents(unittest.TestCase):
 
         for in1, in2, borrow in zip(input1, input2, borrow_in):
             full_subtractor = FullSubtractor(in1, in2, borrow)
-            if in1 and not in2 and not borrow:
-                assert full_subtractor.borrow() == False, f"Inputs: {in1}, {in2}, {borrow}"
-                assert full_subtractor.diff() == True, f"Inputs: {in1}, {in2}, {borrow}"
-            elif not in1 and in2 and not borrow:
-                assert full_subtractor.borrow() == True, f"Inputs: {in1}, {in2}, {borrow}"
-                assert full_subtractor.diff() == True, f"Inputs: {in1}, {in2}, {borrow}"
+            if not in1 and not in2 and not borrow:
+                assert full_subtractor.borrow() == False
+                assert full_subtractor.diff() == False
+            elif in1 and not in2 and not borrow:
+                assert full_subtractor.borrow() == False
+                assert full_subtractor.diff() == True
+            elif in2 and not in1 and not borrow:
+                assert full_subtractor.borrow() == True
+                assert full_subtractor.diff() == True
+            elif in1 and in2 and not borrow:
+                assert full_subtractor.borrow() == False
+                assert full_subtractor.diff() == False
             elif not in1 and not in2 and borrow:
-                assert full_subtractor.borrow() == True, f"Inputs: {in1}, {in2}, {borrow}"
-                assert full_subtractor.diff() == True, f"Inputs: {in1}, {in2}, {borrow}"
+                assert full_subtractor.borrow() == True
+                assert full_subtractor.diff() == True
+            elif in1 and not in2 and borrow:
+                assert full_subtractor.borrow() == False
+                assert full_subtractor.diff() == False
+            elif in2 and not in1 and borrow:
+                assert full_subtractor.borrow() == True
+                assert full_subtractor.diff() == False
             elif in1 and in2 and borrow:
-                assert full_subtractor.borrow() == True, f"Inputs: {in1}, {in2}, {borrow}"
-                assert full_subtractor.diff() == True, f"Inputs: {in1}, {in2}, {borrow}"
-            elif (in1 and in2) or (in1 and borrow) or (in2 and borrow):
-                assert full_subtractor.borrow() == True, f"Inputs: {in1}, {in2}, {borrow}"
-                assert full_subtractor.diff() == False, f"Inputs: {in1}, {in2}, {borrow}"
-            elif in1 or in2 or borrow:
-                assert full_subtractor.borrow() == False, f"Inputs: {in1}, {in2}, {borrow}"
-                assert full_subtractor.diff() == True, f"Inputs: {in1}, {in2}, {borrow}"
-            else:
-                assert full_subtractor.borrow() == False, f"Inputs: {in1}, {in2}, {borrow}"
-                assert full_subtractor.diff() == False, f"Inputs: {in1}, {in2}, {borrow}"
+                assert full_subtractor.borrow() == True
+                assert full_subtractor.diff() == True
 
+    def test_subtractor(self):
+        """test the subtractor class multiple times with random values"""
+        
+        def test_subtractor_once():
+            """the subtractor takes in two 8-bit lists and an optional borrow in and subtracts them"""
+            # randomly generate two 8-bit integers
+            num1 = random.randint(0, 255)
+            num2 = random.randint(0, 255)
+            result = num1 - num2
+
+            # randomly generate a borrow-in value
+            borrow_in = random.choice([True, False])
+
+            # convert the integers to lists of boolean values
+            input1 = [bool(int(bit)) for bit in f"{num1:08b}"]
+            input2 = [bool(int(bit)) for bit in f"{num2:08b}"]
+
+            # use the Subtractor class to compute the difference with borrow-in
+            subtractor = Subtractor(input1, input2, borrow_in)
+            diff_result = subtractor.diff()
+            borrow_out = subtractor.borrow_out()
+
+            # convert the diff result back to an integer
+            diff_result_int = int("".join([str(int(x)) for x in diff_result]), 2)
+
+            # expected borrow-out value
+            expected_borrow_out = (num1 - int(borrow_in)) < num2
+
+
+            # if num1 > num2, then diff_result should equal result - borrow_in
+            if num1 >= num2:
+                expected_diff = result - int(borrow_in)
+                expected_diff %= 256  # apply modulo 256 for wrap around
+            # if num1 < num2, then diff_result should equal result + 256 - borrow_in
+            else:
+                expected_diff = result + 256 - int(borrow_in)
+
+            # compare the diff result with the expected diff
+            self.assertEqual(diff_result_int, expected_diff, f"Expected {expected_diff}, got {diff_result_int}")
+
+            # compare the borrow-out value with the expected borrow-out value
+            self.assertEqual(borrow_out, expected_borrow_out, f"Expected borrow_out {expected_borrow_out}, got {borrow_out}")
+
+        for i in range(1000):
+            test_subtractor_once()
+          
+   
 
 if __name__ == '__main__':
     unittest.main()

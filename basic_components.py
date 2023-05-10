@@ -28,7 +28,6 @@ class FullAdder:
         return or_(self.half_adder1.carry(), self.half_adder2.carry())
     
 
-
 class Adder:
     def __init__(self, input1: list[bool], input2: list[bool], carry_in: bool = False):
         if len(input1) != 8 or len(input2) != 8:
@@ -52,9 +51,8 @@ class Adder:
         return self.full_adders[-1].carry()
 
 
-
 class HalfSubtractor:
-    #TODO add test
+    #Important: Order of connections matters; input 1 - input2
     def __init__(self, input1:bool, input2:bool):
         self.input1 = input1
         self.input2 = input2
@@ -88,18 +86,17 @@ class Subtractor:
             raise ValueError("Both inputs must be 8 bits long.")
         
         self.input1 = input1
-        self.input2 = input2
-        self.full_subtractors = []
+        self.input2 = [not_(x) for x in input2]  # invert input2
+        self.carry_in = not borrow_in  # carry_in is the inverse of borrow_in
 
-        # Process the bits from right to left (LSB to MSB)
-        for bit1, bit2 in zip(reversed(self.input1), reversed(self.input2)):
-            full_subtractor = FullSubtractor(bit1, bit2, borrow_in)
-            self.full_subtractors.append(full_subtractor)
-            borrow_in = full_subtractor.borrow()
+        self.adder = Adder(self.input1, self.input2, self.carry_in)
 
     def diff(self) -> list[bool]:
-        # Reverse the sum result to get the correct order of bits (MSB to LSB)
-        return list(reversed([full_subtractor.diff() for full_subtractor in self.full_subtractors]))
-
+        return self.adder.sum()
+        
     def borrow_out(self) -> bool:
-        return self.full_subtractors[-1].borrow()
+        return not self.adder.carry_out()  # borrow_out is the inverse of carry_out
+
+
+
+
