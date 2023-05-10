@@ -23,3 +23,10 @@ def xnor(a:bool, b:bool)->bool:
 
 
 
+def or_(*args: bool) -> bool:
+    result = False
+    for arg in args:
+        result = result | arg
+    return result
+
+

@@ -2,7 +2,7 @@
 import unittest
 import gates
 from gates import and_, or_, not_, nand, nor, xor, xnor
-from basic_components import HalfAdder, FullAdder, Adder, HalfSubtractor, FullSubtractor, Subtractor
+from basic_components import HalfAdder, FullAdder, Adder, HalfSubtractor, FullSubtractor, Subtractor, Mux
 import random
 
 class TestGates(unittest.TestCase):
@@ -241,7 +241,20 @@ class TestBasicComponents(unittest.TestCase):
         for i in range(1000):
             test_subtractor_once()
           
-   
+
+
+    def test_mux(self):
+        select = False
+        assert Mux(False, False, select).output() == False
+        assert Mux(False, True, select).output() == True
+        assert Mux(True, False, select).output() == False
+        assert Mux(True, True, select).output() == True
+        select = True
+        assert Mux(False, False, select).output() == False
+        assert Mux(True, False, select).output() == True
+        assert Mux(False, True, select).output() == False
+        assert Mux(True, True, select).output() == True
+
 
 if __name__ == '__main__':
     unittest.main()
