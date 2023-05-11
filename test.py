@@ -2,8 +2,11 @@
 import unittest
 import gates
 from gates import and_, or_, not_, nand, nor, xor, xnor
-from basic_components import HalfAdder, FullAdder, Adder, HalfSubtractor, FullSubtractor, Subtractor, Mux
+from basic_components import HalfAdder, FullAdder, Adder, HalfSubtractor, FullSubtractor, Subtractor, Mux8Bit, Mux
+from alu import ALU
 import random
+
+
 
 class TestGates(unittest.TestCase):
     
@@ -242,7 +245,6 @@ class TestBasicComponents(unittest.TestCase):
             test_subtractor_once()
           
 
-
     def test_mux(self):
         select = False
         assert Mux(False, False, select).output() == False
@@ -254,6 +256,86 @@ class TestBasicComponents(unittest.TestCase):
         assert Mux(True, False, select).output() == True
         assert Mux(False, True, select).output() == False
         assert Mux(True, True, select).output() == True
+
+    def test_mux8bit(self):
+        """true = 1 , false = 2"""
+        for i in range(100):
+            input1 = [random.choice([True, False]) for x in range(8)]
+            input2 = [random.choice([True, False]) for x in range(8)]
+            select = random.choice([True, False])
+
+            mux8bit = Mux8Bit(input1, input2, select)
+            output = mux8bit.output()
+
+            if select:
+                assert output == input1
+            else:
+                assert output == input2
+
+
+class TestALU(unittest.TestCase):
+    def test_alu(self):
+        for _ in range(100):  # Run the test 100 times
+            num1 = random.randint(0, 255)
+            num2 = random.randint(0, 255)
+
+            # convert the integers to lists of boolean values
+            input1 = [bool(int(bit)) for bit in f"{num1:08b}"]
+            input2 = [bool(int(bit)) for bit in f"{num2:08b}"]
+
+            # randomly generate control1 and control2
+            control1 = random.choice([True, False])
+            control2 = random.choice([True, False])
+
+            alu = ALU(input1, input2, control1, control2)
+
+            if not control1 and not control2:
+                # Add
+                expected_result = num1 + num2
+                expected_overflow = expected_result > 255
+                expected_result = expected_result % 256  # Simulate 8-bit overflow
+
+                # convert the expected_result to a list of boolean values
+                expected_result = [bool(int(bit)) for bit in f"{expected_result:08b}"]
+
+                self.assertEqual(alu.out(), expected_result, f"Expected result {expected_result}, got {alu.out()}")
+                self.assertEqual(alu.overflow(), expected_overflow, f"Expected overflow {expected_overflow}, got {alu.overflow()}")
+
+
+            elif not control1 and control2:
+                # Or
+                expected_result = num1 | num2
+
+                # convert the expected_result to a list of boolean values
+                expected_result = [bool(int(bit)) for bit in f"{expected_result:08b}"]
+
+                self.assertEqual(alu.out(), expected_result, f"Expected result {expected_result}, got {alu.out()}")
+                
+            elif control1 and not control2:
+                # Subtract
+                expected_result = num1 - num2
+                expected_carry_out = num2 > num1
+                expected_result = expected_result % 256  # Simulate 8-bit overflow
+
+                # convert the expected_result to a list of boolean values
+                expected_result = [bool(int(bit)) for bit in f"{expected_result:08b}"]
+
+                self.assertEqual(alu.out(), expected_result, f"Expected result {expected_result}, got {alu.out()}")
+                self.assertEqual(alu.carry_out(), expected_carry_out, f"Expected carry_out {expected_carry_out}, got {alu.carry_out()}")
+
+            elif control1 and control2:
+                # And
+                expected_result = num1 & num2
+
+                # convert the expected_result to a list of boolean values
+                expected_result = [bool(int(bit)) for bit in f"{expected_result:08b}"]
+
+                self.assertEqual(alu.out(), expected_result, f"Expected result {expected_result}, got {alu.out()}")
+
+
+
+
+
 
 
 if __name__ == '__main__':

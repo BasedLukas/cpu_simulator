@@ -23,10 +23,23 @@ def xnor(a:bool, b:bool)->bool:
 
 
 
-def or_(*args: bool) -> bool:
-    result = False
-    for arg in args:
-        result = result | arg
-    return result
 
+# def bit_and(params: list[bool]) -> bool:
+#     assert len(params) > 1 # At least two inputs are required
+#     return True if all(params) else False
 
+# def bit_or(params: list[bool]) -> bool:
+#     assert len(params) > 1 # At least two inputs are required
+#     return True if any(params) else False
+
+# def bit_not(params: list[bool]) -> list[bool]:
+#     assert len(params) > 1 # At least two inputs are required
+#     return [not x for x in params]
+
+# def bit_nand(params: list[bool]) -> bool:
+#     assert len(params) > 1 # At least two inputs are required
+#     return not bit_and(params)
+
+# def bit_nor(params: list[bool]) -> bool:
+#     assert len(params) > 1 # At least two inputs are required
+#     return not or_(params)
