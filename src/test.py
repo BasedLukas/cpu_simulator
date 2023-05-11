@@ -1,6 +1,6 @@
 
 import unittest
-import gates
+import gates as gates
 from gates import and_, or_, not_, nand, nor, xor, xnor
 from basic_components import HalfAdder, FullAdder, Adder, HalfSubtractor, FullSubtractor, Subtractor, Mux8Bit, Mux
 from alu import ALU

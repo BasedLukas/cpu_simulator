@@ -1,3 +1,8 @@
+# clone
+git clone https://github.com/BasedLukas/cpu_simulator.git
+cd cpu_simulator
+
 # create a virtual env
 python -m venv venv
+
 
