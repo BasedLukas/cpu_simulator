@@ -1,10 +1,11 @@
 
 import unittest
+import random
+
 import gates as gates
 from gates import and_, or_, not_, nand, nor, xor, xnor
 from basic_components import HalfAdder, FullAdder, Adder, HalfSubtractor, FullSubtractor, Subtractor, Mux8Bit, Mux, Decoder
 from alu import ALU
-import random
 
 
 
@@ -371,5 +372,9 @@ if __name__ == '__main__':
 
 
 
-
+""""assertEqual(a, b): Checks if a is equal to b.
+    assertTrue(x): Checks if x is true.
+    assertFalse(x): Checks if x is false.
+    assertIn(a, b): Checks if a is present in b.
+    assertRaises(exception, callable, *args, **kwargs): Checks if calling callable with the provided arguments raises the specified exception."""
 
