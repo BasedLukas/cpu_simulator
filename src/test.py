@@ -2,7 +2,7 @@
 import unittest
 import gates as gates
 from gates import and_, or_, not_, nand, nor, xor, xnor
-from basic_components import HalfAdder, FullAdder, Adder, HalfSubtractor, FullSubtractor, Subtractor, Mux8Bit, Mux
+from basic_components import HalfAdder, FullAdder, Adder, HalfSubtractor, FullSubtractor, Subtractor, Mux8Bit, Mux, Decoder
 from alu import ALU
 import random
 
@@ -273,6 +273,36 @@ class TestBasicComponents(unittest.TestCase):
                 assert output == input2
 
 
+    def test_decoder(self):
+        for i in range(30):  
+            # Generate a random 3-bit input
+            input_bits = [random.choice([True, False]) for j in range(3)]
+
+            # Convert the input to an integer to find the expected output
+            input_int = int("".join([str(int(x)) for x in input_bits]), 2)
+
+            # Pass the input to the decoder
+            decoder = Decoder(input_bits)
+            output = decoder.output()
+
+            if input_int == 0:
+                assert output == [True, False, False, False, False, False, False, False]
+            elif input_int == 1:
+                assert output == [False, True, False, False, False, False, False, False]
+            elif input_int == 2:
+                assert output == [False, False, True, False, False, False, False, False]
+            elif input_int == 3:
+                assert output == [False, False, False, True, False, False, False, False]
+            elif input_int == 4:
+                assert output == [False, False, False, False, True, False, False, False]
+            elif input_int == 5:
+                assert output == [False, False, False, False, False, True, False, False]
+            elif input_int == 6:
+                assert output == [False, False, False, False, False, False, True, False]
+            elif input_int == 7:
+                assert output == [False, False, False, False, False, False, False, True]
+
+
 class TestALU(unittest.TestCase):
     def test_alu(self):
         for _ in range(100):  # Run the test 100 times
@@ -331,8 +361,6 @@ class TestALU(unittest.TestCase):
                 expected_result = [bool(int(bit)) for bit in f"{expected_result:08b}"]
 
                 self.assertEqual(alu.out(), expected_result, f"Expected result {expected_result}, got {alu.out()}")
-
-
 
 
 

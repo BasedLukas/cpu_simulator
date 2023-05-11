@@ -156,4 +156,22 @@ class AddSub:
         return not_(self.adder.carry_out())
 
 
+class Decoder:
+    """3 bit decoder, uses the 3 MSB in the input
+    output is a list of 8 bits where 0 is MSB and 7 is LSB"""
+
+    def __init__ (self, input:list[bool]):
+        self.input = input[:3]
+        self.output_list = [None]*8
+        self.output_list[0] = and_(not_(self.input[0]), not_(self.input[1]), not_(self.input[2]))
+        self.output_list[1] = and_(not_(self.input[0]), not_(self.input[1]), self.input[2])
+        self.output_list[2] = and_(not_(self.input[0]), self.input[1], not_(self.input[2]))
+        self.output_list[3] = and_(not_(self.input[0]), self.input[1], self.input[2])
+        self.output_list[4] = and_(self.input[0], not_(self.input[1]), not_(self.input[2]))
+        self.output_list[5] = and_(self.input[0], not_(self.input[1]), self.input[2])
+        self.output_list[6] = and_(self.input[0], self.input[1], not_(self.input[2]))
+        self.output_list[7] = and_(self.input[0], self.input[1], self.input[2])
+    
+    def output(self) -> list[bool]:
+        return self.output_list
 

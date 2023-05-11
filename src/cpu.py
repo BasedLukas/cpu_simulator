@@ -9,16 +9,15 @@ from alu import ALU
 # 4 == logical or == 01
 
 program = [
-    1,  # add
-    1,  # add
+
     1,  # add
     2,  # subtract
     3,  # logical and
     4,  # logical or
 ]
 
-register1 = [True, False, True, False, True, False, True, False]
-register2 = [True, True, True, True, False, False, False, False]
+register1 = [True, True, True, True, False, False, False, False]
+register2 = [True, False, True, False, True, False, True, False]
 
 language = { 1: [False,False], 2: [True, False], 3: [True,True], 4: [False,True] }
 

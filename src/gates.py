@@ -1,7 +1,10 @@
 
 
-def and_(a:bool, b:bool)->bool:
-    return a & b
+# def and_(a:bool, b:bool)->bool:
+#     return a & b
+
+def and_(*args:bool)->bool:
+    return all(args)
 
 def or_(a:bool, b:bool)->bool:
     return a | b
