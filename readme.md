@@ -5,3 +5,5 @@ All the operation should be based on the properties of the logic gates, and chan
 Check out the docs for details.  
 tests.py should run error free.  
 pilot.py gives you a basic cpu.
+cheating is where i implement the cpu without relying on logic gates to help me figure out what i want it to do.  
+the entire project is still work in progress.
