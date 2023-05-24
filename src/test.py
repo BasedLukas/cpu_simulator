@@ -284,7 +284,7 @@ class TestBasicComponents(unittest.TestCase):
 
             # Pass the input to the decoder
             decoder = Decoder(input_bits)
-            output = decoder.output()
+            output = decoder.output
 
             if input_int == 0:
                 assert output == [True, False, False, False, False, False, False, False]
@@ -329,7 +329,7 @@ class TestALU(unittest.TestCase):
                 # convert the expected_result to a list of boolean values
                 expected_result = [bool(int(bit)) for bit in f"{expected_result:08b}"]
 
-                self.assertEqual(alu.out(), expected_result, f"Expected result {expected_result}, got {alu.out()}")
+                self.assertEqual(alu.out, expected_result, f"Expected result {expected_result}, got {alu.out}")
                 self.assertEqual(alu.overflow(), expected_overflow, f"Expected overflow {expected_overflow}, got {alu.overflow()}")
 
 
@@ -340,7 +340,7 @@ class TestALU(unittest.TestCase):
                 # convert the expected_result to a list of boolean values
                 expected_result = [bool(int(bit)) for bit in f"{expected_result:08b}"]
 
-                self.assertEqual(alu.out(), expected_result, f"Expected result {expected_result}, got {alu.out()}")
+                self.assertEqual(alu.out, expected_result, f"Expected result {expected_result}, got {alu.out}")
                 
             elif control1 and not control2:
                 # Subtract
@@ -351,7 +351,7 @@ class TestALU(unittest.TestCase):
                 # convert the expected_result to a list of boolean values
                 expected_result = [bool(int(bit)) for bit in f"{expected_result:08b}"]
 
-                self.assertEqual(alu.out(), expected_result, f"Expected result {expected_result}, got {alu.out()}")
+                self.assertEqual(alu.out, expected_result, f"Expected result {expected_result}, got {alu.out}")
                 self.assertEqual(alu.carry_out(), expected_carry_out, f"Expected carry_out {expected_carry_out}, got {alu.carry_out()}")
 
             elif control1 and control2:
@@ -361,7 +361,7 @@ class TestALU(unittest.TestCase):
                 # convert the expected_result to a list of boolean values
                 expected_result = [bool(int(bit)) for bit in f"{expected_result:08b}"]
 
-                self.assertEqual(alu.out(), expected_result, f"Expected result {expected_result}, got {alu.out()}")
+                self.assertEqual(alu.out, expected_result, f"Expected result {expected_result}, got {alu.out}")
 
 
 

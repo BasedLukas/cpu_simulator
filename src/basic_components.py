@@ -162,7 +162,7 @@ class Decoder:
 
     def __init__ (self, input:list[bool]):
         self.input = input[:3]
-        self.output_list = [None]*8
+        self.output_list = [0]*8
         self.output_list[0] = and_(not_(self.input[0]), not_(self.input[1]), not_(self.input[2]))
         self.output_list[1] = and_(not_(self.input[0]), not_(self.input[1]), self.input[2])
         self.output_list[2] = and_(not_(self.input[0]), self.input[1], not_(self.input[2]))
@@ -172,6 +172,34 @@ class Decoder:
         self.output_list[6] = and_(self.input[0], self.input[1], not_(self.input[2]))
         self.output_list[7] = and_(self.input[0], self.input[1], self.input[2])
     
+    @property
     def output(self) -> list[bool]:
         return self.output_list
 
+
+class Control:
+    """2 bit decoder to determine the operation of the CPU
+    uses 2 MSB
+    has 4 outputs for 4 different operations
+    00 = Immediate
+    01 = operate (add, subtract, and, or)
+    10 = copy
+    11 = undefined TODO
+    
+    output[0] = 00
+    output[1] = 01
+    output[2] = 10
+    output[3] = 11
+    """
+
+    def __init__(self, input:list[bool]):
+        self.input = input[:2]
+        self.output_list = [0]*4
+        self.output_list[0] = and_(not_(self.input[0]), not_(self.input[1])) # 00
+        self.output_list[1] = and_(not_(self.input[0]), self.input[1]) # 01
+        self.output_list[2] = and_(self.input[0], not_(self.input[1])) # 10
+        self.output_list[3] = and_(self.input[0], self.input[1]) # 11
+
+    @property
+    def output(self) -> list[bool]:
+        return self.output_list

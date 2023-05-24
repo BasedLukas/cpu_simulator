@@ -45,6 +45,7 @@ ALU rules;
         #pass and or mux out + add sub out to mux
         self.and_or_add_sub_mux = Mux8Bit(and_or_mux_out, add_sub_out, self.control2)
 
+    @property
     def out(self):
         """returns the output of the ALU"""
         return self.and_or_add_sub_mux.output()
