@@ -2,6 +2,7 @@
 def and_(*args:bool)->int:
     return int(all(args))
 
+
 def or_(*args:bool)->int:
     return int(any(args))
 

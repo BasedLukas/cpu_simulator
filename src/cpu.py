@@ -21,6 +21,12 @@ notice that the 2 MSB must always be false
 OPERATE:
 2 LSB determine operation as per alu specs
 always operates on reg1 and reg2 and stores in reg3
+ALU rules;
+    control1 | control2
+    0        | 0        = Add
+    0        | 1        = Or
+    1        | 0        = Subtract
+    1        | 1        = And
 
 COPY:
 3 bits determine source register, next 3 bits determine destination register. 

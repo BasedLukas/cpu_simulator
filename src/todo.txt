@@ -1,0 +1,3 @@
+add tests for cpu
+allow inputs and outputs
+allow editing the program while running

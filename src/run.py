@@ -1,22 +1,10 @@
 from cpu import CPU
+from assembler import assemble_binary
 
 
-
-program1 = [
-        # MOVE 3 into reg0
-        [0,0,0,0,0,0,1,1],
-        # copy into reg 1
-        [1,0,0,0,0,0,0,1],
-        #move 5 into reg0
-        [0,0,0,0,0,1,0,1],
-        #copy into reg2
-        [1,0,0,0,0,0,1,0],
-        #add reg1 and reg2 and store in reg3
-        [0,1,0,0,0,0,0,0],
-        
-        ]
+program = assemble_binary('program.asm')
+print(program)
 
 
-
-cpu = CPU(program1)
+cpu = CPU(program)
 cpu.run()
