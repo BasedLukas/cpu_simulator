@@ -4,7 +4,7 @@ import random
 
 import gates as gates
 from gates import and_, or_, not_, nand, nor, xor, xnor
-from basic_components import HalfAdder, FullAdder, Adder, HalfSubtractor, FullSubtractor, Subtractor, Mux8Bit, Mux, Decoder
+from basic_components import HalfAdder, FullAdder, Adder, HalfSubtractor, FullSubtractor, Subtractor, Mux8Bit, Mux, Decoder, Comparison
 from alu import ALU
 
 
@@ -302,6 +302,30 @@ class TestBasicComponents(unittest.TestCase):
                 assert output == [False, False, False, False, False, False, True, False]
             elif input_int == 7:
                 assert output == [False, False, False, False, False, False, False, True]
+
+    def test_Comparison(self):
+        for _ in range(100):
+            byte = [random.choice([False, True]) for _ in range(8)]
+            byte_value = int(''.join(str(int(b)) for b in byte), 2)
+            if byte[0]:  # if MSB is set, number is negative in 2's complement
+                byte_value -= 256
+            comp = Comparison([False, False, False], byte)
+            self.assertFalse(comp.out)
+            comp = Comparison([False, False, True], byte)
+            self.assertEqual(comp.out, byte_value == 0)
+            comp = Comparison([False, True, False], byte)
+            self.assertEqual(comp.out, byte_value < 0)
+            comp = Comparison([False, True, True], byte)
+            self.assertEqual(comp.out, byte_value <= 0)
+            comp = Comparison([True, False, False], byte)
+            self.assertTrue(comp.out)
+            comp = Comparison([True, False, True], byte)
+            self.assertEqual(comp.out, byte_value != 0)
+            comp = Comparison([True, True, False], byte)
+            self.assertEqual(comp.out, byte_value >= 0)
+            comp = Comparison([True, True, True], byte)
+            self.assertEqual(comp.out, byte_value > 0)
+
 
 
 class TestALU(unittest.TestCase):

@@ -129,7 +129,9 @@ class CPU:
                 else:
                     raise ValueError('invalid destination')
                 print()
-
+            elif self.control.output[3]:
+                print('edit program counter')
+                print()
 
     def __init__(self, program):
         self.registers = {i: [0]*8 for i in range(6)}
@@ -150,18 +152,5 @@ class CPU:
 
 
 
-program1 = [
-        # MOVE 3 into reg0
-        [0,0,0,0,0,0,1,1],
-        # copy into reg 1
-        [1,0,0,0,0,0,0,1],
-        #move 5 into reg0
-        [0,0,0,0,0,1,0,1],
-        #copy into reg2
-        [1,0,0,0,0,0,1,0],
-        #add reg1 and reg2 and store in reg3
-        [0,1,0,0,0,0,0,0],
-        
-        ]     
 
 

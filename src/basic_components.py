@@ -203,3 +203,42 @@ class Control:
     @property
     def output(self) -> list[bool]:
         return self.output_list
+    
+
+class Comparison:
+    """
+    Takes 3 control bits, and a byte to be evaluated and returns boolean based on comparison
+    USES SIGNED NUMBERS 10000000 = -128
+    cntrl | byte value | output
+    ___________________________
+    000   | any        | false
+    001   | =0         | true
+    010   | <0         | true
+    011   | <=0        | true
+    100   | any        | true
+    101   | !=0        | true
+    110   | >=0        | true
+    111   | >0         | true
+    """
+    def __init__(self, control:list[bool,bool,bool], byte:list[bool]):
+        """check docs to understand design,
+        byte[0] is MSB, control[0] is MSB"""
+        self.control = control
+        self.byte = byte
+        self.nor = nor(*byte) # if all bits are 0, nor will be 1
+        self.switch1 = and_(self.control[1], self.byte[0]) 
+        self.switch2 = and_(self.control[2], self.nor)
+        self.or1 = or_(self.switch1, self.switch2)
+        self.xor = xor(self.control[0], self.or1)
+        print('nor', self.nor)
+        print('switch1', self.switch1)
+        print('switch2', self.switch2)
+        print('or1', self.or1)
+        print('xor', self.xor)
+    
+    @property
+    def out(self) -> bool:
+        return self.xor
+
+
+
