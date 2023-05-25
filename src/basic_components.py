@@ -184,7 +184,7 @@ class Control:
     00 = Immediate
     01 = operate (add, subtract, and, or)
     10 = copy
-    11 = undefined TODO
+    11 = update
     
     output[0] = 00
     output[1] = 01
@@ -220,21 +220,17 @@ class Comparison:
     110   | >=0        | true
     111   | >0         | true
     """
-    def __init__(self, control:list[bool,bool,bool], byte:list[bool]):
+    def __init__(self, control:list[bool], byte:list[bool]):
         """check docs to understand design,
         byte[0] is MSB, control[0] is MSB"""
-        self.control = control
+        self.control = control[-3:]
         self.byte = byte
         self.nor = nor(*byte) # if all bits are 0, nor will be 1
         self.switch1 = and_(self.control[1], self.byte[0]) 
         self.switch2 = and_(self.control[2], self.nor)
         self.or1 = or_(self.switch1, self.switch2)
         self.xor = xor(self.control[0], self.or1)
-        print('nor', self.nor)
-        print('switch1', self.switch1)
-        print('switch2', self.switch2)
-        print('or1', self.or1)
-        print('xor', self.xor)
+
     
     @property
     def out(self) -> bool:

@@ -27,6 +27,11 @@ def assemble_instruction(instruction):
         # Copy instruction
         src, dst = map(int, parts[1:])
         return [1, 0] + [int(bit) for bit in format(src, '03b')] + [int(bit) for bit in format(dst, '03b')]
+    elif opcode == 'eval':
+        # Eval instruction
+        relevant_bits = parts[1]
+        return [1, 1, 0, 0, 0] + [int(bit) for bit in relevant_bits]
+        
     else:
         raise ValueError(f'Unknown opcode: {opcode}')
 

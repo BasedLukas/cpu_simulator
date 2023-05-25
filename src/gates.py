@@ -20,3 +20,4 @@ def xor(a:bool, b:bool)->int:
 
 def xnor(a:bool, b:bool)->int:
     return int(not xor(a, b))
+

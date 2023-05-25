@@ -1,8 +1,9 @@
-
-
-
+from gates import  and_
+from basic_components import Decoder, Control, Comparison
 from alu import ALU
-from basic_components import Decoder, Mux8Bit, Control
+from registers import Registers
+
+
 
 """
 
@@ -10,7 +11,7 @@ Instruction set
 00 = Immediate
 01 = operate (add, subtract, and, or)
 10 = copy (source, destination)
-11 = Edit program counter/ ram (TODO)
+11 = Edit program counter/ evaluate comparison
 
 IMMEDIATE:
 moves the number into reg0, example:
@@ -35,6 +36,9 @@ COPY:
 10 000 010 = move from reg0 to reg2
 10 000 110 = move from reg0 to out 
 10 110 000 = move from input to reg0
+
+UPDATE PC:
+Update the pc to the value in reg0 if comparison is true
 """
 
 
@@ -42,115 +46,83 @@ class CPU:
 
     class Cycle:
         def __init__(self, cpu, program_instruction_byte):
-            """"we need a way to move from one of 6 locations to another of 6 locations
-            we can use a 3 bit decoder to select the source and destination
-            we need a 2 bit decoder to select the operation"""
             self.cpu = cpu
             self.program_instruction_byte = program_instruction_byte
             self.control = Control(self.program_instruction_byte)
-            self.decoder1 = Decoder(self.program_instruction_byte[2:5])
-            self.decoder2 = Decoder(self.program_instruction_byte[5:8])
+            self.decoder1 = Decoder(self.program_instruction_byte[2:5]) # source load
+            self.decoder2 = Decoder(self.program_instruction_byte[5:8]) # destination save
 
+            # disable all registers, input, and output from loading and saving
+            self.cpu.registers.load = [0] * 6
+            self.cpu.registers.save = [0] * 6
+            self.cpu.registers.input_load = 0
+            self.cpu.registers.output_save = 0
+
+
+            self.execute()
+            print('decoder1 output: ', self.decoder1.output)
+            print('decoder2 output: ', self.decoder2.output)
+            print('instruction byte: ', self.program_instruction_byte)
+            for i in range(6):
+                print('register ', i, ': ', self.cpu.registers.registers[i], ' save: ', self.cpu.registers.save[i], ' load: ', self.cpu.registers.load[i])
+                
         def execute(self):
             if self.control.output[0]:
+                # Read from the program instruction byte and write to the first register
                 print('immediate')
-                print()
-                self.cpu.registers[0] = self.program_instruction_byte
-            elif self.control.output[1]:
+                self.cpu.registers.save[0] = self.control.output[0]
+                self.cpu.registers.write(self.program_instruction_byte)
+
+            if self.control.output[1]:
                 print('operate')
-                print()
-                self.alu = ALU(self.cpu.registers[1], self.cpu.registers[2], self.program_instruction_byte[6], self.program_instruction_byte[7])
-                self.cpu.registers[3] = self.alu.out
-            elif self.control.output[2]:
+                #The ALU is permanently connected to the first two registers, so we don't set the load and save signals
+                alu = ALU(self.cpu.registers.registers[1], self.cpu.registers.registers[2], self.program_instruction_byte[6], self.program_instruction_byte[7])
+                # activate reg3 save signal
+                self.cpu.registers.save[3] = self.control.output[1]
+                self.cpu.registers.write(alu.out)
+
+            if self.control.output[2]:  
                 print('copy')
-                source_reg = self.decoder1.output
-                destination_reg = self.decoder2.output
-                # use output of decoder to select source
-                if source_reg[0]:
-                    # source is reg0
-                    print('source is reg0')
-                    source = self.cpu.registers[0]
-                elif source_reg[1]:
-                    # source is reg1
-                    print('source is reg1')
-                    source = self.cpu.registers[1]
-                elif source_reg[2]:
-                    # source is reg2
-                    print('source is reg2')
-                    source = self.cpu.registers[2]
-                elif source_reg[3]:
-                    # source is reg3
-                    print('source is reg3')
-                    source = self.cpu.registers[3]
-                elif source_reg[4]:
-                    # source is reg4
-                    print('source is reg4')
-                    source = self.cpu.registers[4]
-                elif source_reg[5]:
-                    # source is reg5
-                    print('source is reg5')
-                    source = self.cpu.registers[5]
-                elif source_reg[6]:
-                    #source is input
-                    print('source is input')
-                    source = self.input_byte
-                else:
-                    raise ValueError('invalid source')
+                # Set the save and load signals for the registers
+                self.cpu.registers.load = self.decoder1.output[:6]
+                self.cpu.registers.save = self.decoder2.output[:6]
+                self.cpu.registers.input_load = self.decoder1.output[6]
+                self.cpu.registers.output_save = self.decoder2.output[6]
+                # Read from the source registers and write to the destination registers
+                data = self.cpu.registers.read()
+                self.cpu.registers.write(data)
 
-                # use output of decoder to select destination
-                if destination_reg[0]:
-                    # destination is reg0
-                    print('destination is reg0')
-                    self.cpu.registers[0] = source
-                elif destination_reg[1]:
-                    # destination is reg1
-                    print('destination is reg1')
-                    self.cpu.registers[1] = source
-                elif destination_reg[2]:
-                    # destination is reg2
-                    print('destination is reg2')
-                    self.cpu.registers[2] = source
-                elif destination_reg[3]:
-                    # destination is reg3
-                    print('destination is reg3')
-                    self.cpu.registers[3] = source
-                elif destination_reg[4]:
-                    # destination is reg4
-                    print('destination is reg4')
-                    self.cpu.registers[4] = source
-                elif destination_reg[5]:
-                    # destination is reg5
-                    print('destination is reg5')
-                    self.cpu.registers[5] = source
-                elif destination_reg[6]:
-                    #destination is output
-                    print('destination is output')
-                    self.output_byte = source
-                else:
-                    raise ValueError('invalid destination')
-                print()
-            elif self.control.output[3]:
-                print('edit program counter')
-                print()
+            if self.control.output[3]:
+                print('evaluate')
+                #enable reg3 load
+                self.cpu.registers.load[3] = self.control.output[3]
+                compare = Comparison(control=self.program_instruction_byte, byte=self.cpu.registers.read())
+                update_counter = compare.out
+                print('compare output: ', compare.out, 'read', self.cpu.registers.read())
+                if and_(self.control.output[3], update_counter):
+                    # get int value of reg0
+                    reg0 = int(''.join(str(x) for x in self.cpu.registers.registers[0]), 2)
+                    self.cpu.pc = reg0
 
-    def __init__(self, program):
-        self.registers = {i: [0]*8 for i in range(6)}
-        self.input_byte = [0]*8
-        self.output_byte = [0]*8
+
+                
+    # def __init__(self, program):
+    #     self.registers = Registers()
+    #     self.program = program
+
+    # def run(self):
+    #     for instruction in self.program:
+    #         self.Cycle(self, instruction)
+
+
+    def __init__(self, program, input_byte=[0]*8):
+        self.registers = Registers()
         self.program = program
+        self.pc = 0  # Program Counter
 
-    def print_reg(self):
-        for i in range(6):
-            print(f'reg{i}', self.registers[i])
-        print()
 
     def run(self):
-        for instruction in self.program:
-            cycle = self.Cycle(self, instruction)
-            cycle.execute()
-            self.print_reg()
-
-
-
-
-
+        while self.pc < len(self.program):
+            self.Cycle(self, self.program[self.pc])
+            print('pc: ', self.pc)
+            self.pc += 1 
