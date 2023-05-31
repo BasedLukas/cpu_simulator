@@ -3,13 +3,12 @@ or
 sub
 and
 copy
-eval:
-    complimentary instructions:
-    0 : never
-    1 : =0
-    2 : <0
-    3 : <=0
-    4 : always
-    5 : !=0
-    6 : >=0
-    7 : >0
+eval: # value of reg3 vs 0. if true sets the program counter to the value in reg0
+    never
+    =
+    <
+    <=
+    always
+    !=
+    >=
+    >

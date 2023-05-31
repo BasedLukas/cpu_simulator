@@ -110,6 +110,7 @@ class CPU:
                 if and_(self.control.output[3], update_counter):
                     # get int value of reg0
                     reg0 = int(''.join(str(x) for x in self.cpu.registers.registers[0]), 2)
+                    print('debug: update counter to ', reg0)
                     self.cpu.pc = reg0
 
 
@@ -128,11 +129,12 @@ class CPU:
             #each cycle clear i/o
             self.registers.input = [0] * 8
             self.registers.output = [0] * 8
+            # increment program counter This is done now so as not to interfere when updated by the program
+            self.pc += 1 
             # check if we need to write to input
             if write_to_input:
                 self.registers.input = write_to_input()
-            self.Cycle(self, self.program[self.pc])
+            self.Cycle(self, self.program[self.pc - 1])
             # check if we need to read from output
             if read_from_output:
                 read_from_output(self.registers.output)
-            self.pc += 1 

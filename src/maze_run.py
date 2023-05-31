@@ -2,8 +2,9 @@ from maze import Robot, draw
 import pygame
 import sys
 from cpu import CPU
-from assembler import assemble_binary
+from assembler2 import assemble_binary
 import time
+
 
 robot = Robot([1,1], 'up')
 
@@ -17,8 +18,7 @@ while True:
 
 
         draw(robot)
-        time.sleep(1)
         cpu.run(write_to_input=robot.get_front_cell_bit,read_from_output=robot.move)
-        time.sleep(1)
+        time.sleep(3)
         pygame.quit()
         sys.exit()
