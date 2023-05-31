@@ -4,19 +4,20 @@ def convert_to_bits(integer):
     """takes in an integer and returns a byte"""
     return [int(bit) for bit in format(integer, '08b')]
 
-def assemble_instruction(instruction, labels):
+def assemble_instruction(instruction, labels, pc):
+    instruction = instruction.split('#')[0].strip()
     parts = instruction.split()
+    if not parts:
+        # Empty line or comment
+        return None
     part1 = parts[0].lower()
-
-    labels = {}
-    program = []
 
     if part1 == 'label':
         # Label definition
         label = parts[1].lower()
         if label in labels:
             raise ValueError(f'Duplicate label definition: {label}')
-        labels[label] = len(labels)
+        labels[label] = pc  # Set the label's value to current program counter
         return None
     elif part1.isdigit():
         # Immediate instruction
@@ -24,6 +25,12 @@ def assemble_instruction(instruction, labels):
         if value < 0 or value > 63:
             raise ValueError(f'Invalid immediate value: {value}')
         return convert_to_bits(value)
+    elif part1 in labels:
+        # this is a jump to a label
+        return convert_to_bits(labels[part1])
+    # ... [rest of the opcodes handling]
+
+
     elif part1 == 'add':
         # Operate instruction (add)
         return [0, 1, 0, 0, 0, 0, 0, 0]
@@ -76,34 +83,24 @@ def assemble_instruction(instruction, labels):
         
 
 
-
-
-
-
 def assemble_binary(filename):
     """takes in a file in cwd and returns binary program"""
     program = []
     labels = {}
     
     with open(filename, 'r') as f:
-    # First pass: collect labels
+        pc = 0  # This will act as our program counter
         for line in f:
             instruction = line.strip()
             if instruction:
-                assembled = assemble_instruction(instruction, labels)
+                assembled = assemble_instruction(instruction, labels, pc)
                 if assembled is not None:
                     program.append(assembled)
+                    pc += 1  # Increment program counter for each non-label instruction
 
-        # Second pass: assemble instructions
-        pc = 0
-        for line in f:
-            instruction = line.strip()
-            if instruction:
-                assembled = assemble_instruction(instruction, labels)
-                if assembled is not None:
-                    program.append(assembled)
-                    pc += 1
-                
     return program
+
+
+
 
 

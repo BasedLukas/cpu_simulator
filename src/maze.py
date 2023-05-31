@@ -92,7 +92,7 @@ class Robot:
 
 
 
-def draw(robot):
+def draw(robot, delay=0):
     # Draw the maze
     for y in range(len(maze)):
         for x in range(len(maze[y])):
@@ -119,6 +119,6 @@ def draw(robot):
     rect = pygame.Rect(robot.pos[0]*CELL_SIZE, robot.pos[1]*CELL_SIZE, CELL_SIZE, CELL_SIZE)
     pygame.draw.rect(window, RED, rect)
     pygame.display.update()
-
+    time.sleep(delay)
 
 
