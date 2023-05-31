@@ -1,0 +1,15 @@
+add
+or
+sub
+and
+copy
+eval:
+    complimentary instructions:
+    0 : never
+    1 : =0
+    2 : <0
+    3 : <=0
+    4 : always
+    5 : !=0
+    6 : >=0
+    7 : >0

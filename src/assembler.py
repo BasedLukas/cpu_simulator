@@ -17,7 +17,7 @@ def assemble_instruction(instruction):
     elif opcode == 'or':
         # Operate instruction (or)
         return [0, 1, 0, 0, 0, 0, 0, 1]
-    elif opcode == 'subtract':
+    elif opcode == 'sub':
         # Operate instruction (subtract)
         return [0, 1, 0, 0, 0, 0, 1, 0]
     elif opcode == 'and':

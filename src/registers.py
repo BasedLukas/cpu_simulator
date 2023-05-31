@@ -29,5 +29,6 @@ class Registers:
                 if self.save[i]:
                     self.registers[i] = data
             if self.output_save:
-                self.output[i] = data[i]
+
+                self.output = data
 
