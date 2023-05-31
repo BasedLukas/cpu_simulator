@@ -4,8 +4,9 @@
 This project emulates an 8 bit CPU using only logic gates and building upwards. All the operations are based on the underlying properties of the logic gates, and changing their operation leads to corresponding changes in function.  
   
 ![cpu](./docs/full_cpu.png)  
-  
-run maze_run.py to see the cpu control a robot in a maze.  
+ <img src="./docs/full_cpu.png" width="100">
+ 
+Run maze_run.py to see the cpu control a robot in a maze.  
   
 ![maze](./docs/maze.jpg)  
   
