@@ -1,5 +1,5 @@
 
-from gates import and_, or_, not_, nand, nor, xor, xnor
+from .gates import and_, or_, not_, nand, nor, xor, xnor
 
 class HalfAdder:
     def __init__(self, input1:bool, input2:bool):

@@ -1,6 +1,6 @@
 
-from gates import and_, or_, not_
-from basic_components import AddSub, Mux8Bit
+from .gates import and_, or_, not_
+from .basic_components import AddSub, Mux8Bit
 
 
 class ALU:

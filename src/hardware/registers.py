@@ -1,5 +1,5 @@
 
-from gates import or_
+from .gates import or_
 
 class Registers:
     def __init__(self):

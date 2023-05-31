@@ -1,48 +1,108 @@
 
 
+def convert_to_bits(integer):
+    """takes in an integer and returns a byte"""
+    return [int(bit) for bit in format(integer, '08b')]
 
-def assemble_instruction(instruction):
+def assemble_instruction(instruction, labels):
     parts = instruction.split()
-    opcode = parts[0].lower()
+    part1 = parts[0].lower()
 
-    if opcode.isdigit():
+    labels = {}
+    program = []
+
+    if part1 == 'label':
+        # Label definition
+        label = parts[1].lower()
+        if label in labels:
+            raise ValueError(f'Duplicate label definition: {label}')
+        labels[label] = len(labels)
+        return None
+    elif part1.isdigit():
         # Immediate instruction
-        value = int(opcode)
+        value = int(part1)
         if value < 0 or value > 63:
             raise ValueError(f'Invalid immediate value: {value}')
-        return [0, 0] + [int(bit) for bit in format(value, '06b')]
-    elif opcode == 'add':
+        return convert_to_bits(value)
+    elif part1 == 'add':
         # Operate instruction (add)
         return [0, 1, 0, 0, 0, 0, 0, 0]
-    elif opcode == 'or':
+    elif part1 == 'or':
         # Operate instruction (or)
         return [0, 1, 0, 0, 0, 0, 0, 1]
-    elif opcode == 'sub':
+    elif part1 == 'sub':
         # Operate instruction (subtract)
         return [0, 1, 0, 0, 0, 0, 1, 0]
-    elif opcode == 'and':
+    elif part1 == 'and':
         # Operate instruction (and)
         return [0, 1, 0, 0, 0, 0, 1, 1]
-    elif opcode == 'copy':
-        # Copy instruction
-        src, dst = map(int, parts[1:])
-        return [1, 0] + [int(bit) for bit in format(src, '03b')] + [int(bit) for bit in format(dst, '03b')]
-    elif opcode == 'eval':
+    elif part1 == 'copy':
+        # Copy instruction = 10 
+        cp = [1, 0]
+        part2 = parts[1].lower()
+        part3 = parts[2].lower()
+        src = [int(bit) for bit in format(int(part2), '03b')]
+        dst = [int(bit) for bit in format(int(part3), '03b')]
+        return cp + src + dst
+    
+    elif part1 == 'eval':
         # Eval instruction
-        relevant_bits = parts[1]
-        return [1, 1, 0, 0, 0] + [int(bit) for bit in relevant_bits]
+        part2 = parts[1].lower()
+
+        if part2 == 'never':
+            value = 0
+        elif part2 == '=':
+            value = 1
+        elif part2 == '<':
+            value = 2
+        elif part2 == '<=':
+            value = 3
+        elif part2 == 'always':
+            value = 4
+        elif part2 == '!=':
+            value = 5
+        elif part2 == '>=':
+            value = 6
+        elif part2 == '>':
+            value = 7
+        else:
+            raise ValueError(f'Unknown opcode: {part2}')
+        return [1, 1, 0, 0, 0] + [int(bit) for bit in format(value, '03b')]
+
         
     else:
-        raise ValueError(f'Unknown opcode: {opcode}')
+        print(instruction)
+        raise ValueError(f'Unknown opcode')
+        
+
+
+
+
+
 
 def assemble_binary(filename):
+    """takes in a file in cwd and returns binary program"""
     program = []
+    labels = {}
+    
     with open(filename, 'r') as f:
+    # First pass: collect labels
         for line in f:
-            line = line.strip()
-            if line and not line.startswith('#'):  # Ignore empty lines and comments
-                instruction = assemble_instruction(line)
-                program.append(instruction)
+            instruction = line.strip()
+            if instruction:
+                assembled = assemble_instruction(instruction, labels)
+                if assembled is not None:
+                    program.append(assembled)
+
+        # Second pass: assemble instructions
+        pc = 0
+        for line in f:
+            instruction = line.strip()
+            if instruction:
+                assembled = assemble_instruction(instruction, labels)
+                if assembled is not None:
+                    program.append(assembled)
+                    pc += 1
                 
     return program
 

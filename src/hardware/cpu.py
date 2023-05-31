@@ -1,7 +1,7 @@
-from gates import  and_
-from basic_components import Decoder, Control, Comparison
-from alu import ALU
-from registers import Registers
+from .gates import  and_
+from .basic_components import Decoder, Control, Comparison
+from .alu import ALU
+from .registers import Registers
 
 
 

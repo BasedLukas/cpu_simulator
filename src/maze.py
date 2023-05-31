@@ -1,19 +1,18 @@
 import pygame
 import sys
 import time
-# Define constants for the width and height of each grid cell
+
+
 CELL_SIZE = 50
-# Define colors
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLACK = (0,0,0)
 BLUE = (0,0,255)
-# Initialize Pygame
 pygame.init()
-delay = 0.03
+delay = 0.03 # speed of the animation
+directions = ['up', 'right', 'down', 'left']
 
-# Define the maze layout, 0 is a path
 maze = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -31,11 +30,9 @@ maze = [
 # Create a window
 window = pygame.display.set_mode((len(maze[0])*CELL_SIZE, len(maze)*CELL_SIZE))
 
-# Directions
-directions = ['up', 'right', 'down', 'left']
 
 class Robot:
-    def __init__(self, initial_pos=None, initial_dir=None):
+    def __init__(self, initial_pos=[1,1], initial_dir='up'):
         self.pos = initial_pos
         self.dir = initial_dir
 
@@ -62,6 +59,7 @@ class Robot:
         self.dir = directions[(directions.index(self.dir) + 1) % 4]
 
     def move(self, instruction):
+        """this function takes the cpu output and moves the robot accordingly"""
         if instruction == [0,0,0,0,0,0,1,1]:
             self.move_forward()
         elif instruction == [0,0,0,0,0,0,0,1]:
