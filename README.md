@@ -54,8 +54,8 @@ label start     #create a label
 34              # put 34 in reg0
 copy 0 1        # move 34 to register 1
 12              #put 12 in reg0
-add             #add 12 and 34, store in reg2
-copy 2 3        #move the result to register3
+copy 0 2        # move to reg2
+add             #add 12 and 34, store in reg3
 start           # put start in reg0
 eval =          # if the value in reg3 is = 0 then program counter is set to value start
 ```
