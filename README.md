@@ -57,13 +57,38 @@ eval >=
 ```  
 Labels can be defined to be used as jumping points.    
 ```
-label start     #create a label
-34              # put 34 in reg0
-copy 0 1        # move 34 to register 1
-12              #put 12 in reg0
-copy 0 2        # move to reg2
-add             #add 12 and 34, store in reg3
-start           # put start in reg0
-eval =          # if the value in reg3 is = 0 then program counter is set to value start
+label start
+# read from input into reg1
+copy 6 1
+# add reg 1 and 2
+add
+#copy result into reg2
+copy 3 2
+
+# loop so long as we are not negative
+start
+eval >=
+
+# if we overflow print result to output
+copy 3 6
+
+```
+  
+To write input and read output from the CPU pass it in as a callable.  
+```
+from hardware.cpu import CPU
+from assembler import assemble_binary
+
+program = assemble_binary('program.asm')
+
+# funtions to be passed to the cpu
+def write_to_input():
+    return [0,0,0,0,0,0,0,1]
+def read_from_output(value):
+    if value != [0,0,0,0,0,0,0,0]: # CPU always returns 0 by default
+        print('result:',value)
+
+cpu = CPU(program)
+cpu.run(write_to_input=write_to_input, read_from_output=read_from_output)
 ```
 
