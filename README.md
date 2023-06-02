@@ -43,7 +43,7 @@ copy 0 6 # copy from reg0 to output
 copy 5 3 # copy from reg5 to reg3
 ```
 Eval  
-Evaluates reg3 against a condition, if true sets the program counter to the value in reg0.
+Evaluates reg3 against a 0, if true sets the program counter to the value in reg0.
 USES SIGNED NUMBERS
 ```
 eval always
