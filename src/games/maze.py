@@ -8,8 +8,7 @@ WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLACK = (0,0,0)
-BLUE = (0,0,255)
-delay = 0.05 # speed of the animation
+BLUE = (0,0,255) # speed of the animation
 directions = ['up', 'right', 'down', 'left']
 
 maze = [
@@ -32,18 +31,18 @@ maze = [
 
 
 class Robot:
-    def __init__(self, initial_pos=[1,1], initial_dir='up'):
+    def __init__(self, initial_pos=[1,1], initial_dir='up', delay=0):
         pygame.init()
         self.window = pygame.display.set_mode((len(maze[0])*CELL_SIZE, len(maze)*CELL_SIZE))
         self.pos = initial_pos
         self.dir = initial_dir
+        self.delay = delay
 
     def event_check(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-
 
     def move_forward(self):
         ahead = self.get_front_cell()
@@ -68,8 +67,8 @@ class Robot:
         self.dir = directions[(directions.index(self.dir) + 1) % 4]
 
     def move(self, instruction):
-        self.event_check()
         """this function takes the cpu output and moves the robot accordingly"""
+        self.event_check()
         if instruction == [0,0,0,0,0,0,1,1]:
             self.move_forward()
         elif instruction == [0,0,0,0,0,0,0,1]:
@@ -100,11 +99,11 @@ class Robot:
             return [0,0,0,0,0,0,0,1]
         elif front == 2:
             pygame.quit()
-            quit() 
+            sys.exit('Robot reached the end of the maze!') 
 
 
 
-def draw(robot,delay=0.01):
+def draw(robot):
     window = robot.window
     """Pass in a robot object and draw the maze and robot"""
     for y in range(len(maze)):
@@ -132,7 +131,7 @@ def draw(robot,delay=0.01):
     rect = pygame.Rect(robot.pos[0]*CELL_SIZE, robot.pos[1]*CELL_SIZE, CELL_SIZE, CELL_SIZE)
     pygame.draw.rect(window, RED, rect)
     pygame.display.update()
-    time.sleep(delay)
+    time.sleep(robot.delay)
 
 
 

@@ -55,17 +55,18 @@ class CPU:
 
         def execute(self):
             if self.cpu.verbose:
+                print('--------------')
                 print()
-                print()
-                print('pc:', self.cpu.pc)
+                print('pc:', self.cpu.pc - 1)
                 if self.control.output[0]:
-                    print('Immediate  Instruction:', self.program_instruction_byte)
+                    print('Immediate ', self.program_instruction_byte)
                 elif self.control.output[1]:
-                    print('Operate  Instruction:', self.program_instruction_byte)
+                    print('Operate ', self.program_instruction_byte)
                 elif self.control.output[2]:
-                    print('Copy  Instruction:', self.program_instruction_byte)
+                    print('Copy', self.program_instruction_byte)
                 elif self.control.output[3]:
-                    print('Update PC  Instruction:', self.program_instruction_byte)
+                    print('Update ', self.program_instruction_byte)
+                print()
 
             # disable all registers, input, and output from loading and saving
             self.cpu.registers.load = [0] * 6
@@ -109,8 +110,10 @@ class CPU:
                 #for each of 6 reg print value as well as if it is loading or saving
                 for i in range(6):
                     print('reg'+str(i)+':', self.cpu.registers.registers[i], 'load:', self.cpu.registers.load[i], 'save:', self.cpu.registers.save[i])
-                print('input:', self.cpu.registers.input, 'input_load:', self.cpu.registers.input_load)
-                print('output:', self.cpu.registers.output, 'output_save:', self.cpu.registers.output_save)
+                if self.cpu.registers.input_load:
+                    print('input:', self.cpu.registers.input, 'input_load:', self.cpu.registers.input_load)
+                if self.cpu.registers.output_save:
+                    print('output:', self.cpu.registers.output, 'output_save:', self.cpu.registers.output_save)
 
     
     def __init__(self, program, verbose=True):
@@ -124,7 +127,7 @@ class CPU:
         """You can pass in a function to write to input and read from output.
         Read from output must take an argument that will be the cpu's output"""
         while self.pc < len(self.program):
-            print('pc:', self.pc)
+
             #each cycle clear old i/o
             self.registers.input = [0] * 8
             self.registers.output = [0] * 8
@@ -138,3 +141,5 @@ class CPU:
             # check if we need to read from output
             if read_from_output:
                 read_from_output(self.registers.output)
+            print()
+            print('pc:', self.pc)

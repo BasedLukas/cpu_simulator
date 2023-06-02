@@ -2,10 +2,10 @@
 import unittest
 import random
 
-import gates as gates
-from gates import and_, or_, not_, nand, nor, xor, xnor
-from basic_components import HalfAdder, FullAdder, Adder, HalfSubtractor, FullSubtractor, Subtractor, Mux8Bit, Mux, Decoder, Comparison
-from alu import ALU
+import hardware.gates as gates
+from hardware.gates import and_, or_, not_, nand, nor, xor, xnor
+from hardware.basic_components import HalfAdder, FullAdder, Adder, HalfSubtractor, FullSubtractor, Subtractor, Mux8Bit, Mux, Decoder, Comparison
+from hardware.alu import ALU
 
 
 
@@ -388,7 +388,7 @@ class TestALU(unittest.TestCase):
                 self.assertEqual(alu.out, expected_result, f"Expected result {expected_result}, got {alu.out}")
 
 
-
+#TODO test registers, cpu
 
 
 if __name__ == '__main__':
