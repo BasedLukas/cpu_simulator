@@ -3,7 +3,7 @@
 
 This project emulates an 8 bit CPU using only logic gates and building upwards. All the operations are based on the underlying properties of the logic gates, and changing their operation leads to corresponding changes in function.  
  
- <img src="./docs/full_cpu.png" width="600">
+ <img src="./docs/full_cpu.jpeg" width="600">
  
 Usage  
 ```
