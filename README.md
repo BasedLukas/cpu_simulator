@@ -14,8 +14,8 @@ To see the cpu control a robot in a maze. The robot sees one square ahead, and i
 Can you solve the maze?  
 You can also access the CPU directly from run.py to run a program of your choice.  
 
-  
-<img src="./docs/maze.jpg" width="600">
+![](./docs/maze.gif)  
+
   
 # Design
 

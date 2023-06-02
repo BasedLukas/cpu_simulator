@@ -10,7 +10,7 @@ GREEN = (0, 255, 0)
 BLACK = (0,0,0)
 BLUE = (0,0,255)
 pygame.init()
-delay = 0.03 # speed of the animation
+delay = 0.00 # speed of the animation
 directions = ['up', 'right', 'down', 'left']
 
 maze = [
@@ -42,7 +42,9 @@ class Robot:
             return
         elif ahead == 2:
             pygame.quit()
-            sys.exit()
+            quit() 
+            # sys.exit()
+            
         if self.dir == 'up':
             self.pos[1] -= 1
         elif self.dir == 'right':
@@ -88,7 +90,8 @@ class Robot:
         elif front == 1:
             return [0,0,0,0,0,0,0,1]
         elif front == 2:
-            return [0,0,0,0,0,0,1,0]
+            pygame.quit()
+            quit() 
 
 
 

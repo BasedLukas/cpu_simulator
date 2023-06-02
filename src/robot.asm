@@ -1,11 +1,11 @@
 # 1 = turn left, 2=  turn right, 3=  step forward
-# we will store info about left in reg4, info about right in reg5
+
 
 label uturn
 2
 copy 0 6
 
-label right
+label right # twice to copensate for turning left
 2
 copy 0 6
 copy 0 6
@@ -18,15 +18,15 @@ label ahead
 3
 copy 0 6
 
-label start
+# start
 # check if wall to the left store in 3
 1
 copy 0 6
 copy 6 3
-2 
+2           #turn back to original direction
 copy 0 6
 
-#if no wall left, turn left until there is a wall
+#if no wall left, turn left until there is a wall. We follow wall on our left side
 left 
 eval =
 
