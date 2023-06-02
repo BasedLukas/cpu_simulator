@@ -10,7 +10,7 @@ GREEN = (0, 255, 0)
 BLACK = (0,0,0)
 BLUE = (0,0,255)
 pygame.init()
-delay = 0.00 # speed of the animation
+delay = 0.01 # speed of the animation
 directions = ['up', 'right', 'down', 'left']
 
 maze = [
