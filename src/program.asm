@@ -1,17 +1,17 @@
-# read from input
-copy 6 0
+
+label start
+# read from input into reg1
 copy 6 1
+# add reg 1 and 2
 add
-copy 2 6
+#copy result into reg2
+copy 3 2
 
-#comment
-#3
-#copy 0 1
-#5
-#copy 0 2
-#add
+# loop so long as we are not negative
+start
+eval >=
 
-#loop
-#0
-# always = 100
-#eval 000
+# if we overflow print result to output
+copy 3 6
+
+

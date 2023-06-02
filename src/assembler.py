@@ -1,105 +1,149 @@
 
+def get_labels(file)->dict:
+    """Finds the positions of each label relative to the pc"""
+    pc = 0
+    labels = {}
+    for line in file:
+        #check line not empty
+        if  line.strip():
+            # check that pc is not greater than 63
+            if pc > 63:
+                raise ValueError('Program too long, label must be within 64 lines')
+            line = line.strip()
+            if line.startswith('#'):
+                continue
+            elif line.startswith('label'):
+                # get the name of the label
+                label = line.split(' ')[1]
+                # make sure the label is not an int
+                if label.isdigit():
+                    raise ValueError(f'Invalid label: {label} is an int')
+                # make sure the label is not already in the dictionary
+                if label in labels:
+                    raise ValueError(f'Duplicate label definition: {label}')
+                # add the label to the dictionary
+                labels[label] = pc
+            else:
+                pc += 1
+    return labels
 
-def convert_to_bits(integer):
-    """takes in an integer and returns a byte"""
-    return [int(bit) for bit in format(integer, '08b')]
 
-def assemble_instruction(instruction, labels, pc):
-    instruction = instruction.split('#')[0].strip()
-    parts = instruction.split()
-    if not parts:
-        # Empty line or comment
+def immediate_values(line,labels):
+    """For each line determine if it is an immediate value"""
+    # check if the line is a comment
+    line = line.split('#')[0].strip()
+    # check if the line is empty
+    if not line:
         return None
-    part1 = parts[0].lower()
-
-    if part1 == 'label':
-        # Label definition
-        label = parts[1].lower()
-        if label in labels:
-            raise ValueError(f'Duplicate label definition: {label}')
-        labels[label] = pc  # Set the label's value to current program counter
+    # check if the line is a label
+    if line.startswith('label'):
         return None
-    elif part1.isdigit():
-        # Immediate instruction
-        value = int(part1)
+    # check if the line is in labels dict
+    if line in labels:
+        value = labels[line]
+        # convert the value to binary
+        byte_value = [int(bit) for bit in format(value, '08b')]
+        return byte_value
+    # check if the line is an immediate value
+    if line.isdigit():
+        value = int(line)
         if value < 0 or value > 63:
             raise ValueError(f'Invalid immediate value: {value}')
-        return convert_to_bits(value)
-    elif part1 in labels:
-        # this is a jump to a label
-        return convert_to_bits(labels[part1])
-    # ... [rest of the opcodes handling]
+        # convert the value to binary
+        byte_value = [int(bit) for bit in format(value, '08b')]
+        return byte_value
 
 
-    elif part1 == 'add':
-        # Operate instruction (add)
-        return [0, 1, 0, 0, 0, 0, 0, 0]
-    elif part1 == 'or':
-        # Operate instruction (or)
-        return [0, 1, 0, 0, 0, 0, 0, 1]
-    elif part1 == 'sub':
-        # Operate instruction (subtract)
-        return [0, 1, 0, 0, 0, 0, 1, 0]
-    elif part1 == 'and':
-        # Operate instruction (and)
-        return [0, 1, 0, 0, 0, 0, 1, 1]
-    elif part1 == 'copy':
-        # Copy instruction = 10 
+def copy_instructions(line):
+    """For each line determine if it is a copy instruction"""
+    line = line.split('#')[0].strip()
+    if not line:
+        return None
+    if line.startswith('label'):
+        return None
+    if line.startswith('copy'):
         cp = [1, 0]
-        part2 = parts[1].lower()
-        part3 = parts[2].lower()
-        src = [int(bit) for bit in format(int(part2), '03b')]
-        dst = [int(bit) for bit in format(int(part3), '03b')]
+        parts = line.split(' ')
+        src = [int(bit) for bit in format(int(parts[1]), '03b')]
+        dst = [int(bit) for bit in format(int(parts[2]), '03b')]
         return cp + src + dst
-    
-    elif part1 == 'eval':
-        # Eval instruction
-        part2 = parts[1].lower()
 
-        if part2 == 'never':
+
+def operate_instructions(line):
+    """For each line determine if it is an operate instruction"""
+    line = line.split('#')[0].strip()
+    if not line:
+        return None
+    if line.startswith('label'):
+        return None
+    if line in ['add', 'or', 'sub', 'and']:
+        if line == 'add':
+            return [0, 1, 0, 0, 0, 0, 0, 0]
+        elif line == 'or':
+            return [0, 1, 0, 0, 0, 0, 0, 1]
+        elif line == 'sub':
+            return [0, 1, 0, 0, 0, 0, 1, 0]
+        elif line == 'and':
+            return [0, 1, 0, 0, 0, 0, 1, 1]
+
+
+def jump_instructions(line):
+    """For each line determine if it is a jump instruction"""
+    line = line.split('#')[0].strip()
+    if not line:
+        return None
+    if line.startswith('label'):
+        return None
+    # if line starts with eval
+    if line.startswith('eval'):
+        # create a varible for the symbol
+        symbol = line.split(' ')[1]
+        if symbol == 'never':
             value = 0
-        elif part2 == '=':
+        elif symbol == '=':
             value = 1
-        elif part2 == '<':
+        elif symbol == '<':
             value = 2
-        elif part2 == '<=':
+        elif symbol == '<=':
             value = 3
-        elif part2 == 'always':
+        elif symbol == 'always':
             value = 4
-        elif part2 == '!=':
+        elif symbol == '!=':
             value = 5
-        elif part2 == '>=':
+        elif symbol == '>=':
             value = 6
-        elif part2 == '>':
-            value = 7
+        elif symbol == '>':
+            value = 7   
         else:
-            raise ValueError(f'Unknown opcode: {part2}')
+            raise ValueError(f'Unknown opcode: {symbol}')
         return [1, 1, 0, 0, 0] + [int(bit) for bit in format(value, '03b')]
-
-        
-    else:
-        print(instruction)
-        raise ValueError(f'Unknown opcode')
         
 
-
-def assemble_binary(filename):
-    """takes in a file in cwd and returns binary program"""
+def assemble_binary(filename:str):
+    """takes in an assembly file and returns binary program"""
     program = []
-    labels = {}
-    
     with open(filename, 'r') as f:
-        pc = 0  # This will act as our program counter
+        """start by finding all the labels"""
+        labels = get_labels(f)
+        f.close()
+    with open(filename, 'r') as f:
+        # for each line in the file
         for line in f:
-            instruction = line.strip()
-            if instruction:
-                assembled = assemble_instruction(instruction, labels, pc)
-                if assembled is not None:
-                    program.append(assembled)
-                    pc += 1  # Increment program counter for each non-label instruction
-
+            a =immediate_values(line,labels)
+            b = copy_instructions(line)
+            c = operate_instructions(line)
+            d = jump_instructions(line)
+            # add the line to the program
+            if a:
+                program.append(a)
+            elif b:
+                program.append(b)
+            elif c:
+                program.append(c)
+            elif d:
+                program.append(d)
+        f.close()
     return program
-
 
 
 

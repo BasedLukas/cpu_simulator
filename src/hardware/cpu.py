@@ -6,7 +6,6 @@ from .registers import Registers
 
 
 """
-
 Instruction set
 00 = Immediate
 01 = operate (add, subtract, and, or)
@@ -59,19 +58,17 @@ class CPU:
             self.cpu.registers.output_save = 0
 
 
+            self.execute()
             if self.cpu.verbose:
                 self.print_details()
 
-            self.execute()
-
         def print_details(self):
-            print()
             print('PC:', self.cpu.pc) 
             for i in range(6):
                 print('register ', i, ': ', self.cpu.registers.registers[i], ' save: ', self.cpu.registers.save[i], ' load: ', self.cpu.registers.load[i])
             print('input:        ', self.cpu.registers.input, '           load: ', self.cpu.registers.input_load)
             print('output:       ', self.cpu.registers.output, ' save: ', self.cpu.registers.output_save)
-        
+            print()
         def execute(self):
             if self.control.output[0]:
                 if self.cpu.verbose:
@@ -110,7 +107,6 @@ class CPU:
                 if and_(self.control.output[3], update_counter):
                     # get int value of reg0
                     reg0 = int(''.join(str(x) for x in self.cpu.registers.registers[0]), 2)
-                    print('debug: update counter to ', reg0)
                     self.cpu.pc = reg0
 
 
