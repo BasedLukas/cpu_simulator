@@ -27,7 +27,8 @@ maze = [
     [1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1],
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]
-# Create a window
+
+
 window = pygame.display.set_mode((len(maze[0])*CELL_SIZE, len(maze)*CELL_SIZE))
 
 
@@ -43,8 +44,6 @@ class Robot:
         elif ahead == 2:
             pygame.quit()
             quit() 
-            # sys.exit()
-            
         if self.dir == 'up':
             self.pos[1] -= 1
         elif self.dir == 'right':
@@ -69,7 +68,7 @@ class Robot:
         elif instruction == [0,0,0,0,0,0,1,0]:
             self.turn_right()
         draw(self)
-        time.sleep(delay)
+
 
 
     def get_front_cell(self):
@@ -83,6 +82,7 @@ class Robot:
             return maze[self.pos[1]][self.pos[0]-1]
         
     def get_front_cell_bit(self):
+        """This functions reads the front cell and passes it to the cpu input"""
         front = self.get_front_cell()
         #convert to byte
         if front == 0:
@@ -95,8 +95,8 @@ class Robot:
 
 
 
-def draw(robot, delay=0):
-    # Draw the maze
+def draw(robot,delay=0.01):
+    """Pass in a robot object and draw the maze and robot"""
     for y in range(len(maze)):
         for x in range(len(maze[y])):
             rect = pygame.Rect(x*CELL_SIZE, y*CELL_SIZE, CELL_SIZE, CELL_SIZE)
@@ -123,5 +123,6 @@ def draw(robot, delay=0):
     pygame.draw.rect(window, RED, rect)
     pygame.display.update()
     time.sleep(delay)
+
 
 
