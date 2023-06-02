@@ -5,8 +5,15 @@ This project emulates an 8 bit CPU using only logic gates and building upwards. 
  
  <img src="./docs/full_cpu.png" width="600">
  
-Run maze_run.py to see the cpu control a robot in a maze. The robot sees one square ahead, and is controlled by the robot.asm program.  
-Can you solve the maze?   
+Usage  
+```
+pip install pygame
+python maze_run.py
+```
+To see the cpu control a robot in a maze. The robot sees one square ahead, and is controlled by the robot.asm program.  
+Can you solve the maze?  
+You can also access the CPU directly from run.py to run a program of your choice.  
+
   
 <img src="./docs/maze.jpg" width="600">
   
