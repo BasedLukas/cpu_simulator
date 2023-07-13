@@ -1,7 +1,7 @@
 
 # 8 bit CPU emulator
 
-This project emulates an 8 bit CPU using only logic gates and building upwards. All the operations are based on the underlying properties of the logic gates, and changing their operation leads to corresponding changes in function.  
+This project emulates an 8 bit CPU using only logic gates and building upwards. All the operations are based on the underlying properties of the logic gates, and changing their operation leads to corresponding changes in function. More details about this project can be found [here](https://loreley.one/2023/07/04/cpu/)  
  
  <img src="./docs/full_cpu.jpeg" width="600">
  
