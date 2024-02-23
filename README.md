@@ -8,9 +8,10 @@ This project emulates an 8 bit CPU using only logic gates and building upwards. 
 Usage  
 ```
 pip install pygame
+cd src/
 python maze_run.py
 ```
-To see the cpu control a robot in a maze. The robot sees one square ahead, and is controlled by the robot.asm program.  
+This will run the program to navigate the robot out of the maze. The robot sees one square ahead, and is controlled by the `robot.asm` program.  
 Can you solve the maze?  
 You can also access the CPU directly from run.py to run a program of your choice.  
 
@@ -19,7 +20,7 @@ You can also access the CPU directly from run.py to run a program of your choice
   
 # Design
 
-There are 6 registers, an input and an output. There is an ALU that can add, subract, and, or. We can also perform comparisons.
+There are 6 registers, an input and an output. There is an ALU that can ADD, SUB, AND, OR. We can also perform comparisons.
 
 #### Code
 Move a value into reg0.
