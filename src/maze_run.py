@@ -1,5 +1,5 @@
 from maze import Robot, draw
-from hardware.cpu import CPU
+from hardware.new_cpu import CPU
 from assembler import assemble_binary
 
 

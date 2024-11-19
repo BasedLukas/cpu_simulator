@@ -1,6 +1,7 @@
 from .gates import  and_
-from .basic_components import Decoder, Control, Comparison
-from .alu import ALU
+from .basic_components import decode,  comparison
+from .basic_components import control as ctl
+from .alu import alu as alu_func
 from .registers import Registers
 
 
@@ -47,9 +48,9 @@ class CPU:
         def __init__(self, cpu, program_instruction_byte):
             self.cpu = cpu
             self.program_instruction_byte = program_instruction_byte
-            self.control = Control(self.program_instruction_byte)
-            self.decoder1 = Decoder(self.program_instruction_byte[2:5]) # source load
-            self.decoder2 = Decoder(self.program_instruction_byte[5:8]) # destination save
+            self.control = ctl(self.program_instruction_byte)
+            self.decoder1 = decode(self.program_instruction_byte[2:5]) # source load
+            self.decoder2 = decode(self.program_instruction_byte[5:8]) # destination save
 
             # disable all registers, input, and output from loading and saving
             self.cpu.registers.load = [0] * 6
@@ -70,41 +71,41 @@ class CPU:
             print('output:       ', self.cpu.registers.output, ' save: ', self.cpu.registers.output_save)
             print()
         def execute(self):
-            if self.control.output[0]:
+            if self.control[0]:
                 if self.cpu.verbose:
                     print('immediate')
-                self.cpu.registers.save[0] = self.control.output[0]
+                self.cpu.registers.save[0] = self.control[0]
                 self.cpu.registers.write(self.program_instruction_byte)
 
-            if self.control.output[1]:
+            if self.control[1]:
                 if self.cpu.verbose: 
                     print('operate')
                 #The ALU is permanently connected to the first two registers, so we don't set the load and save signals
-                alu = ALU(self.cpu.registers.registers[1], self.cpu.registers.registers[2], self.program_instruction_byte[6], self.program_instruction_byte[7])
+                alu = alu_func(self.cpu.registers.registers[1], self.cpu.registers.registers[2], self.program_instruction_byte[6], self.program_instruction_byte[7])
                 # activate reg3 save signal
-                self.cpu.registers.save[3] = self.control.output[1]
+                self.cpu.registers.save[3] = self.control[1]
                 self.cpu.registers.write(alu.out)
 
-            if self.control.output[2]:
+            if self.control[2]:
                 if self.cpu.verbose:  
                     print('copy')
                 # Set the save and load signals for the registers
-                self.cpu.registers.load = self.decoder1.output[:6]
-                self.cpu.registers.save = self.decoder2.output[:6]
-                self.cpu.registers.input_load = self.decoder1.output[6]
-                self.cpu.registers.output_save = self.decoder2.output[6]
+                self.cpu.registers.load = self.decoder1[:6]
+                self.cpu.registers.save = self.decoder2[:6]
+                self.cpu.registers.input_load = self.decoder1[6]
+                self.cpu.registers.output_save = self.decoder2[6]
                 # Read from the source registers and write to the destination registers
                 data = self.cpu.registers.read()
                 self.cpu.registers.write(data)
 
-            if self.control.output[3]:
+            if self.control[3]:
                 if self.cpu.verbose:
                     print('evaluate')
                 #enable reg3 load
-                self.cpu.registers.load[3] = self.control.output[3]
-                compare = Comparison(control=self.program_instruction_byte, byte=self.cpu.registers.read())
-                update_counter = compare.out
-                if and_(self.control.output[3], update_counter):
+                self.cpu.registers.load[3] = self.control[3]
+                compare = comparison(control=self.program_instruction_byte, byte=self.cpu.registers.read())
+                update_counter = compare
+                if and_(self.control[3], update_counter):
                     # get int value of reg0
                     reg0 = int(''.join(str(x) for x in self.cpu.registers.registers[0]), 2)
                     self.cpu.pc = reg0

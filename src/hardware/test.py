@@ -2,10 +2,9 @@
 import unittest
 import random
 
-import gates as gates
-from gates import and_, or_, not_, nand, nor, xor, xnor
-from basic_components import HalfAdder, FullAdder, Adder, HalfSubtractor, FullSubtractor, Subtractor, Mux8Bit, Mux, Decoder, Comparison
-from alu import ALU
+from . import gates
+from .basic_components import HalfAdder, FullAdder, Adder, HalfSubtractor, FullSubtractor, Subtractor, Mux8Bit, Mux, decode, comparison
+from .alu import alu as alu_func
 
 
 
@@ -283,8 +282,8 @@ class TestBasicComponents(unittest.TestCase):
             input_int = int("".join([str(int(x)) for x in input_bits]), 2)
 
             # Pass the input to the decoder
-            decoder = Decoder(input_bits)
-            output = decoder.output
+            output = decode(input_bits)
+
 
             if input_int == 0:
                 assert output == [True, False, False, False, False, False, False, False]
@@ -303,28 +302,28 @@ class TestBasicComponents(unittest.TestCase):
             elif input_int == 7:
                 assert output == [False, False, False, False, False, False, False, True]
 
-    def test_Comparison(self):
+    def test_comparison(self):
         for _ in range(100):
             byte = [random.choice([False, True]) for _ in range(8)]
             byte_value = int(''.join(str(int(b)) for b in byte), 2)
             if byte[0]:  # if MSB is set, number is negative in 2's complement
                 byte_value -= 256
-            comp = Comparison([False, False, False], byte)
-            self.assertFalse(comp.out)
-            comp = Comparison([False, False, True], byte)
-            self.assertEqual(comp.out, byte_value == 0)
-            comp = Comparison([False, True, False], byte)
-            self.assertEqual(comp.out, byte_value < 0)
-            comp = Comparison([False, True, True], byte)
-            self.assertEqual(comp.out, byte_value <= 0)
-            comp = Comparison([True, False, False], byte)
-            self.assertTrue(comp.out)
-            comp = Comparison([True, False, True], byte)
-            self.assertEqual(comp.out, byte_value != 0)
-            comp = Comparison([True, True, False], byte)
-            self.assertEqual(comp.out, byte_value >= 0)
-            comp = Comparison([True, True, True], byte)
-            self.assertEqual(comp.out, byte_value > 0)
+            comp = comparison([False, False, False], byte)
+            self.assertFalse(comp)
+            comp = comparison([False, False, True], byte)
+            self.assertEqual(comp, byte_value == 0)
+            comp = comparison([False, True, False], byte)
+            self.assertEqual(comp, byte_value < 0)
+            comp = comparison([False, True, True], byte)
+            self.assertEqual(comp, byte_value <= 0)
+            comp = comparison([True, False, False], byte)
+            self.assertTrue(comp)
+            comp = comparison([True, False, True], byte)
+            self.assertEqual(comp, byte_value != 0)
+            comp = comparison([True, True, False], byte)
+            self.assertEqual(comp, byte_value >= 0)
+            comp = comparison([True, True, True], byte)
+            self.assertEqual(comp, byte_value > 0)
 
 
 
@@ -342,7 +341,7 @@ class TestALU(unittest.TestCase):
             control1 = random.choice([True, False])
             control2 = random.choice([True, False])
 
-            alu = ALU(input1, input2, control1, control2)
+            alu = alu_func(input1, input2, control1, control2)
 
             if not control1 and not control2:
                 # Add
@@ -354,7 +353,7 @@ class TestALU(unittest.TestCase):
                 expected_result = [bool(int(bit)) for bit in f"{expected_result:08b}"]
 
                 self.assertEqual(alu.out, expected_result, f"Expected result {expected_result}, got {alu.out}")
-                self.assertEqual(alu.overflow(), expected_overflow, f"Expected overflow {expected_overflow}, got {alu.overflow()}")
+                self.assertEqual(alu.overflow, expected_overflow, f"Expected overflow {expected_overflow}, got {alu.overflow}")
 
 
             elif not control1 and control2:
@@ -376,7 +375,7 @@ class TestALU(unittest.TestCase):
                 expected_result = [bool(int(bit)) for bit in f"{expected_result:08b}"]
 
                 self.assertEqual(alu.out, expected_result, f"Expected result {expected_result}, got {alu.out}")
-                self.assertEqual(alu.carry_out(), expected_carry_out, f"Expected carry_out {expected_carry_out}, got {alu.carry_out()}")
+                self.assertEqual(alu.carry_out, expected_carry_out, f"Expected carry_out {expected_carry_out}, got {alu.carry_out}")
 
             elif control1 and control2:
                 # And
