@@ -1,182 +1,215 @@
 
+
+
 from .gates import and_, or_, not_, nand, nor, xor, xnor
+from types import SimpleNamespace as sn
 
-class HalfAdder:
-    def __init__(self, input1:bool, input2:bool):
-        self.input1 = input1
-        self.input2 = input2
-    
-    def sum(self) -> bool:
-        return xor(self.input1, self.input2)
- 
-    def carry(self)->bool:
-        return and_(self.input1, self.input2)
+
+def half_adder(input1:bool, input2:bool):
+    return sn(
+        sum=xor(input1, input2),
+        carry=and_(input1, input2)
+        )
+
     
 
-class FullAdder:
-    def __init__(self, input1:bool, input2:bool, carry_in:bool):
-        self.input1 = input1
-        self.input2 = input2
-        self.carry_in = carry_in
-        self.half_adder1 = HalfAdder(input1, input2)
-        self.half_adder2 = HalfAdder(self.half_adder1.sum(), carry_in)
-
-    def sum(self):
-        return self.half_adder2.sum()
-    
-    def carry(self):
-        return or_(self.half_adder1.carry(), self.half_adder2.carry())
-    
-
-class Adder:
-    def __init__(self, input1: list[bool], input2: list[bool], carry_in: bool = False):
-        if len(input1) != 8 or len(input2) != 8:
-            raise ValueError("Both inputs must be 8 bits long.")
-        
-        self.input1 = input1
-        self.input2 = input2
-        self.full_adders = []
-
-        # Process the bits from right to left (LSB to MSB)
-        for bit1, bit2 in zip(reversed(self.input1), reversed(self.input2)):
-            full_adder = FullAdder(bit1, bit2, carry_in)
-            self.full_adders.append(full_adder)
-            carry_in = full_adder.carry()
-
-    def sum(self) -> list[bool]:
-        # Reverse the sum result to get the correct order of bits (MSB to LSB)
-        return list(reversed([full_adder.sum() for full_adder in self.full_adders]))
-
-    def carry_out(self) -> bool:
-        return self.full_adders[-1].carry()
+def full_adder(input1:bool, input2:bool, carry_in:bool):
+    half_adder1 = half_adder(input1, input2)
+    half_adder2 = half_adder(half_adder1.sum, carry_in)
+    out = sn(
+        sum=half_adder2.sum,
+        carry=or_(half_adder1.carry, half_adder2.carry)
+    )
+    return out
 
 
-class HalfSubtractor:
-    #Important: Order of connections matters; input 1 - input2
-    def __init__(self, input1:bool, input2:bool):
-        self.input1 = input1
-        self.input2 = input2
-    
-    def diff(self) -> bool:
-        return xor(self.input1, self.input2)
- 
-    def borrow(self)->bool:
-        return and_(not_(self.input1), self.input2)
-    
-
-class FullSubtractor:
-    #TODO add test
-    def __init__(self, input1:bool, input2:bool, borrow_in:bool):
-        self.input1 = input1
-        self.input2 = input2
-        self.borrow_in = borrow_in
-        self.half_subtractor1 = HalfSubtractor(input1, input2)
-        self.half_subtractor2 = HalfSubtractor(self.half_subtractor1.diff(), borrow_in)
-
-    def diff(self):
-        return self.half_subtractor2.diff()
-    
-    def borrow(self):
-        return or_(self.half_subtractor1.borrow(), self.half_subtractor2.borrow())
-    
-
-class Subtractor:
-    def __init__(self, input1: list[bool], input2: list[bool], borrow_in: bool = False):
-        if len(input1) != 8 or len(input2) != 8:
-            raise ValueError("Both inputs must be 8 bits long.")
-        
-        self.input1 = input1
-        self.input2 = [not_(x) for x in input2]  # invert input2
-        self.carry_in = not_(borrow_in)  # carry_in is the inverse of borrow_in
-
-        self.adder = Adder(self.input1, self.input2, self.carry_in)
-
-    def diff(self) -> list[bool]:
-        return self.adder.sum()
-        
-    def borrow_out(self) -> bool:
-        return not self.adder.carry_out()  # borrow_out is the inverse of carry_out
-
-
-class Mux:
-    """True = 1, False = 2"""
-    def __init__(self, input1:bool, input2:bool, sel:bool):
-        self.input1 = input1
-        self.input2 = input2
-        self.sel = sel
-    
-    def output(self) -> bool:
-        nand_central = nand(self.sel, self.sel)
-        nand1 = nand(self.input1, self.sel)
-        nand2 = nand(self.input2,nand_central)
-        output = nand(nand1, nand2)
-        return output
-
-
-class Mux8Bit:
-    """True = 1, False = 2"""
-    def __init__(self, input1:list[bool], input2:list[bool], sel:bool):
-        assert len(input1) == 8 and len(input2) == 8, "Inputs should be 8 bits."
-        self.input1 = input1
-        self.input2 = input2
-        self.sel = sel
-    
-    def output(self) -> list[bool]:
-        output = []
-        for bit1, bit2 in zip(self.input1, self.input2):
-            nand_central = nand(self.sel, self.sel)
-            nand1 = nand(bit1, self.sel)
-            nand2 = nand(bit2,nand_central)
-            output_bit = nand(nand1, nand2)
-            output.append(output_bit)
-        return output
-        
-
-class AddSub:
+def adder(input1: list[bool], input2: list[bool], carry_in: bool = False):
     """
-    input1 - input2
-    if operation == True then subtract else add
-    overflow used when doing addition
-    borrow out used when doing subtraction (in2 > in1))"""
-    def __init__(self, input1: list[bool], input2: list[bool], operation: bool):
-        self.input1 = input1
-        # we need to xor input 2 with operation
-        self.input2 = [xor(x, operation) for x in input2] 
-        self.operation = operation
+    Simulates an 8-bit adder using a list of full adders.
 
-        self.adder = Adder(self.input1, self.input2, self.operation)
+    Args:
+        input1 (list[bool]): First 8-bit binary number as a list of booleans.
+        input2 (list[bool]): Second 8-bit binary number as a list of booleans.
+        carry_in (bool): Initial carry-in bit.
+
+    Returns:
+        SimpleNamespace: An object with `.sum` and `.carry_out` properties.
+    """
+    if len(input1) != 8 or len(input2) != 8:
+        raise ValueError("Both inputs must be 8 bits long.")
+
+    full_adders = []
+    carry = carry_in
+
+    # Process bits from right to left (LSB to MSB)
+    for bit1, bit2 in zip(reversed(input1), reversed(input2)):
+        out = full_adder(bit1, bit2, carry)
+        full_adders.append(out)
+        carry = out.carry
+
+    # Extract the sum (in reverse order to maintain LSB to MSB processing)
+    sum_result = list(reversed([f.sum for f in full_adders]))
+
+    # Return a namespace mimicking the original behavior
+    return sn(
+        sum=sum_result,
+        carry_out=carry
+    )
+
     
-    def output(self) -> list[bool]:
-        return self.adder.sum()
-    def overflow(self) -> bool:
-        """used when doing addition"""
-        return self.adder.carry_out()
-    def  borrow_out(self) -> bool:
-        """used when doing subtraction"""
-        return not_(self.adder.carry_out())
+def half_subtractor(input1: bool, input2: bool):
+    """
+    Simulates a half subtractor circuit.
+
+    Args:
+        input1 (bool): The minuend (input1 - input2).
+        input2 (bool): The subtrahend.
+
+    Returns:
+        SimpleNamespace: An object with `.diff` and `.borrow` properties.
+    """
+    diff = xor(input1, input2)
+    borrow = and_(not_(input1), input2)
+    return sn(
+        diff=diff,
+        borrow=borrow
+    )
 
 
-# class Decoder:
-#     """3 bit decoder, uses the 3 MSB in the input
-#     output is a list of 8 bits where 0 is MSB and 7 is LSB"""
+def full_subtractor(input1: bool, input2: bool, borrow_in: bool):
+    """
+    Simulates a full subtractor circuit.
 
-#     def __init__ (self, input:list[bool]):
-#         self.input = input[:3]
-#         self.output_list = [0]*8
-#         self.output_list[0] = and_(not_(self.input[0]), not_(self.input[1]), not_(self.input[2]))
-#         self.output_list[1] = and_(not_(self.input[0]), not_(self.input[1]), self.input[2])
-#         self.output_list[2] = and_(not_(self.input[0]), self.input[1], not_(self.input[2]))
-#         self.output_list[3] = and_(not_(self.input[0]), self.input[1], self.input[2])
-#         self.output_list[4] = and_(self.input[0], not_(self.input[1]), not_(self.input[2]))
-#         self.output_list[5] = and_(self.input[0], not_(self.input[1]), self.input[2])
-#         self.output_list[6] = and_(self.input[0], self.input[1], not_(self.input[2]))
-#         self.output_list[7] = and_(self.input[0], self.input[1], self.input[2])
+    Args:
+        input1 (bool): The minuend (input1 - input2 - borrow_in).
+        input2 (bool): The subtrahend.
+        borrow_in (bool): Borrow input from the previous bit.
+
+    Returns:
+        SimpleNamespace: An object with `.diff` and `.borrow` properties.
+    """
+    half_subtractor1 = half_subtractor(input1, input2)
+    half_subtractor2 = half_subtractor(half_subtractor1.diff, borrow_in)
+
+    diff = half_subtractor2.diff
+    borrow = or_(half_subtractor1.borrow, half_subtractor2.borrow)
+
+    return sn(
+        diff=diff,
+        borrow=borrow
+    )
+
     
-#     @property
-#     def output(self) -> list[bool]:
-#         return self.output_list
+def subtractor(input1: list[bool], input2: list[bool], borrow_in: bool = False):
+    """
+    Simulates an 8-bit subtractor using an adder.
 
-from .gates import and_, not_
+    Args:
+        input1 (list[bool]): First 8-bit binary number (minuend).
+        input2 (list[bool]): Second 8-bit binary number (subtrahend).
+        borrow_in (bool): Initial borrow-in bit.
+
+    Returns:
+        SimpleNamespace: An object with `.diff` and `.borrow_out` properties.
+    """
+    if len(input1) != 8 or len(input2) != 8:
+        raise ValueError("Both inputs must be 8 bits long.")
+
+    # Invert input2 and borrow_in for subtraction
+    inverted_input2 = [not_(x) for x in input2]
+    carry_in = not_(borrow_in)
+
+    # Use adder for subtraction
+    result = adder(input1, inverted_input2, carry_in)
+
+    return sn(
+        diff=result.sum,
+        borrow_out=not_(result.carry_out)  # borrow_out is the inverse of carry_out
+    )
+
+
+def mux(input1: bool, input2: bool, sel: bool) -> bool:
+    """
+    Simulates a 2-to-1 multiplexer using NAND gates.
+
+    Args:
+        input1 (bool): Input 1.
+        input2 (bool): Input 2.
+        sel (bool): Select signal (True for input2, False for input1).
+
+    Returns:
+        bool: Output of the multiplexer.
+    """
+    nand_central = nand(sel, sel)
+    nand1 = nand(input1, sel)
+    nand2 = nand(input2, nand_central)
+    output = nand(nand1, nand2)
+    return output
+
+
+def mux_8bit(input1: list[bool], input2: list[bool], sel: bool) -> list[bool]:
+    """
+    Simulates an 8-bit 2-to-1 multiplexer.
+
+    Args:
+        input1 (list[bool]): First 8-bit binary number.
+        input2 (list[bool]): Second 8-bit binary number.
+        sel (bool): Select signal (True for input2, False for input1).
+
+    Returns:
+        list[bool]: Output of the 8-bit multiplexer.
+    """
+    if len(input1) != 8 or len(input2) != 8:
+        raise ValueError("Inputs should be 8 bits.")
+    
+    return [mux(bit1, bit2, sel) for bit1, bit2 in zip(input1, input2)]
+
+
+def mux_8bit(input1: list[bool], input2: list[bool], sel: bool) -> list[bool]:
+    """
+    Simulates an 8-bit 2-to-1 multiplexer.
+
+    Args:
+        input1 (list[bool]): First 8-bit binary number.
+        input2 (list[bool]): Second 8-bit binary number.
+        sel (bool): Select signal (True for input2, False for input1).
+
+    Returns:
+        list[bool]: Output of the 8-bit multiplexer.
+    """
+    if len(input1) != 8 or len(input2) != 8:
+        raise ValueError("Inputs should be 8 bits.")
+    
+    return [mux(bit1, bit2, sel) for bit1, bit2 in zip(input1, input2)]
+
+
+def add_sub(input1: list[bool], input2: list[bool], operation: bool):
+    """
+    Simulates an 8-bit add/subtract unit.
+
+    Args:
+        input1 (list[bool]): First 8-bit binary number.
+        input2 (list[bool]): Second 8-bit binary number.
+        operation (bool): True for subtraction, False for addition.
+
+    Returns:
+        SimpleNamespace: An object with `.output`, `.overflow`, and `.borrow_out` properties.
+    """
+    if len(input1) != 8 or len(input2) != 8:
+        raise ValueError("Both inputs must be 8 bits long.")
+
+    # XOR input2 with operation to conditionally invert input2
+    adjusted_input2 = [xor(x, operation) for x in input2]
+
+    # Use adder for addition or subtraction
+    result = adder(input1, adjusted_input2, operation)
+
+    return sn(
+        output=result.sum,
+        overflow=result.carry_out,      # Carry-out used for addition overflow
+        borrow_out=not_(result.carry_out)  # Inverse carry-out used for subtraction borrow-out
+    )
+
 
 def decode(bits: list[bool]) -> list[bool]:
     """
@@ -214,35 +247,6 @@ def decode(bits: list[bool]) -> list[bool]:
 
     return output_list
 
-
-
-# class Control:
-#     """2 bit decoder to determine the operation of the CPU
-#     uses 2 MSB
-#     has 4 outputs for 4 different operations
-#     00 = Immediate
-#     01 = operate (add, subtract, and, or)
-#     10 = copy
-#     11 = update
-    
-#     output[0] = 00
-#     output[1] = 01
-#     output[2] = 10
-#     output[3] = 11
-#     """
-
-#     def __init__(self, input:list[bool]):
-#         self.input = input[:2]
-#         self.output_list = [0]*4
-#         self.output_list[0] = and_(not_(self.input[0]), not_(self.input[1])) # 00
-#         self.output_list[1] = and_(not_(self.input[0]), self.input[1]) # 01
-#         self.output_list[2] = and_(self.input[0], not_(self.input[1])) # 10
-#         self.output_list[3] = and_(self.input[0], self.input[1]) # 11
-
-#     @property
-#     def output(self) -> list[bool]:
-#         return self.output_list
-    
 
 def control(input_bits: list[bool]) -> list[bool]:
     """
@@ -286,38 +290,6 @@ def control(input_bits: list[bool]) -> list[bool]:
     ]
 
     return output_list
-
-# class Comparison:
-#     """
-#     Takes 3 control bits, and a byte to be evaluated and returns boolean based on comparison
-#     USES SIGNED NUMBERS 10000000 = -128
-#     cntrl | byte value | output
-#     ___________________________
-#     000   | any        | false
-#     001   | =0         | true
-#     010   | <0         | true
-#     011   | <=0        | true
-#     100   | any        | true
-#     101   | !=0        | true
-#     110   | >=0        | true
-#     111   | >0         | true
-#     """
-#     def __init__(self, control:list[bool], byte:list[bool]):
-#         """check docs to understand design,
-#         byte[0] is MSB, control[0] is MSB"""
-#         self.control = control[-3:]
-#         self.byte = byte
-#         self.nor = nor(*byte) # if all bits are 0, nor will be 1
-#         self.switch1 = and_(self.control[1], self.byte[0]) 
-#         self.switch2 = and_(self.control[2], self.nor)
-#         self.or1 = or_(self.switch1, self.switch2)
-#         self.xor = xor(self.control[0], self.or1)
-
-    
-#     @property
-#     def out(self) -> bool:
-#         return self.xor
-
 
 
 def comparison(control: list[bool], byte: list[bool]) -> bool:
@@ -374,3 +346,4 @@ def comparison(control: list[bool], byte: list[bool]) -> bool:
     output = xor(control_bits[0], or1)
 
     return output
+
