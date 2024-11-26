@@ -9,6 +9,7 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLACK = (0,0,0)
 BLUE = (0,0,255)
+
 pygame.init()
 delay = 0.05 # speed of the animation
 directions = ['up', 'right', 'down', 'left']
@@ -95,8 +96,13 @@ class Robot:
 
 
 
-def draw(robot,delay=0.01):
+def draw(robot:Robot ,delay=0.01):
     """Pass in a robot object and draw the maze and robot"""
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+
     for y in range(len(maze)):
         for x in range(len(maze[y])):
             rect = pygame.Rect(x*CELL_SIZE, y*CELL_SIZE, CELL_SIZE, CELL_SIZE)

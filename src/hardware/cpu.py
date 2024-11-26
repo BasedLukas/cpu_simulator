@@ -1,137 +1,117 @@
-from .gates import  and_
-from .basic_components import decode,  comparison
-from .basic_components import control as ctl
-from .alu import alu as alu_func
+from .gates import and_, or_, not_
+from .basic_components import decode, control, comparison
+from .alu import alu
 from .registers import Registers
 
 
+class CPU:
+    """
+    A simple CPU simulation with a custom instruction set.
 
-"""
-Instruction set
-00 = Immediate
-01 = operate (add, subtract, and, or)
-10 = copy (source, destination)
-11 = Edit program counter/ evaluate comparison
+    Instruction Set:
+        - 00: Immediate
+            WARNING: max val == 63 (to preserve upper 2 MSB)
+            Moves an 6-bit immediate value into register 0.
+            Example:
+                00 000 000: Move 0 into reg0
+                00 000 001: Move 1 into reg0
 
-IMMEDIATE:
-moves the number into reg0, example:
-00 000 000 = move 0 into reg0
-00 000 001 = move 1 into reg0
-notice that the 2 MSB must always be false
+        - 01: Operate (Add, Subtract, AND, OR)
+            Performs an ALU operation on reg1 and reg2, stores the result in reg3.
+            ALU Control Bits:
+                control1 | control2 | Operation
+                ---------|----------|-----------
+                0        | 0        | Add
+                0        | 1        | OR
+                1        | 0        | Subtract
+                1        | 1        | AND
 
-OPERATE:
-2 LSB determine operation as per alu specs
-always operates on reg1 and reg2 and stores in reg3
-ALU rules;
-    control1 | control2
-    0        | 0        = Add
-    0        | 1        = Or
-    1        | 0        = Subtract
-    1        | 1        = And
+        - 10: Copy (Source, Destination)
+            Copies data from a source to a destination register or I/O.
+            Register Codes:
+                000-101: Registers 0-5
+                110: Input or Output
 
-COPY:
-3 bits determine source register, next 3 bits determine destination register. 
-110 refers to input or output
+            Examples:
+                10 000 010: Move from reg0 to reg2
+                10 000 110: Move from reg0 to output
+                10 110 000: Move from input to reg0
 
-10 000 010 = move from reg0 to reg2
-10 000 110 = move from reg0 to out 
-10 110 000 = move from input to reg0
+        - 11: Update Program Counter / Evaluate Comparison
+            Updates the program counter to the value in reg0 if a comparison is true.
+    """
 
-UPDATE PC:
-Update the pc to the value in reg0 if comparison is true
-"""
-
-
-class CPU:     
-
-    class Cycle:
-        def __init__(self, cpu, program_instruction_byte):
-            self.cpu = cpu
-            self.program_instruction_byte = program_instruction_byte
-            self.control = ctl(self.program_instruction_byte)
-            self.decoder1 = decode(self.program_instruction_byte[2:5]) # source load
-            self.decoder2 = decode(self.program_instruction_byte[5:8]) # destination save
-
-            # disable all registers, input, and output from loading and saving
-            self.cpu.registers.load = [0] * 6
-            self.cpu.registers.save = [0] * 6
-            self.cpu.registers.input_load = 0
-            self.cpu.registers.output_save = 0
-
-
-            self.execute()
-            if self.cpu.verbose:
-                self.print_details()
-
-        def print_details(self):
-            print('PC:', self.cpu.pc) 
-            for i in range(6):
-                print('register ', i, ': ', self.cpu.registers.registers[i], ' save: ', self.cpu.registers.save[i], ' load: ', self.cpu.registers.load[i])
-            print('input:        ', self.cpu.registers.input, '           load: ', self.cpu.registers.input_load)
-            print('output:       ', self.cpu.registers.output, ' save: ', self.cpu.registers.output_save)
-            print()
-        def execute(self):
-            if self.control[0]:
-                if self.cpu.verbose:
-                    print('immediate')
-                self.cpu.registers.save[0] = self.control[0]
-                self.cpu.registers.write(self.program_instruction_byte)
-
-            if self.control[1]:
-                if self.cpu.verbose: 
-                    print('operate')
-                #The ALU is permanently connected to the first two registers, so we don't set the load and save signals
-                alu = alu_func(self.cpu.registers.registers[1], self.cpu.registers.registers[2], self.program_instruction_byte[6], self.program_instruction_byte[7])
-                # activate reg3 save signal
-                self.cpu.registers.save[3] = self.control[1]
-                self.cpu.registers.write(alu.out)
-
-            if self.control[2]:
-                if self.cpu.verbose:  
-                    print('copy')
-                # Set the save and load signals for the registers
-                self.cpu.registers.load = self.decoder1[:6]
-                self.cpu.registers.save = self.decoder2[:6]
-                self.cpu.registers.input_load = self.decoder1[6]
-                self.cpu.registers.output_save = self.decoder2[6]
-                # Read from the source registers and write to the destination registers
-                data = self.cpu.registers.read()
-                self.cpu.registers.write(data)
-
-            if self.control[3]:
-                if self.cpu.verbose:
-                    print('evaluate')
-                #enable reg3 load
-                self.cpu.registers.load[3] = self.control[3]
-                compare = comparison(control=self.program_instruction_byte, byte=self.cpu.registers.read())
-                update_counter = compare
-                if and_(self.control[3], update_counter):
-                    # get int value of reg0
-                    reg0 = int(''.join(str(x) for x in self.cpu.registers.registers[0]), 2)
-                    self.cpu.pc = reg0
-
-
-                
-
-
-    def __init__(self, program, verbose=True):
-        self.registers = Registers()
+    def __init__(self, program):
         self.program = program
         self.pc = 0  # Program Counter
-        self.verbose = verbose
+        self.reg = Registers()  # Registers and I/O
+        self.alu = None
 
+    def exec(self, input_func=None, output_func=None):
+        # Reset load and save signals
+        self.reg.load = [0] * 6
+        self.reg.save = [0] * 6
+        self.reg.input_load = 0
+        self.reg.output_save = 0
 
-    def run(self, write_to_input:callable=None, read_from_output:callable=None):
+        # Clear input and output each cycle
+        self.reg.input = [0] * 8
+        self.reg.output = [0] * 8
+
+        # Fetch input if provided
+        if input_func:
+            self.reg.input = input_func()
+
+        # Fetch instruction and increment program counter
+        instruction_byte = self.program[self.pc]
+        self.pc += 1
+
+        # Decode instruction
+        ctl = control(instruction_byte)
+        decoder1 = decode(instruction_byte[2:5])  # Source (Load)
+        decoder2 = decode(instruction_byte[5:8])  # Destination (Save)
+
+        # Immediate Instruction
+        self.reg.save[0] = ctl[0]  # Enable save to reg0 if immediate instruction
+        self.reg.write(instruction_byte)  # Write immediate value to reg0
+
+        # Operate Instruction
+        # ALU is connected to reg1 and reg2; no need to set load/save signals
+        alu_result = alu(
+            self.reg.registers[1],
+            self.reg.registers[2],
+            instruction_byte[6],
+            instruction_byte[7],
+        )
+        self.alu = alu_result
+        alu_out = alu_result.out
+        self.reg.save[3] = ctl[1]  # Enable save to reg3 if operate instruction
+        self.reg.write_to_register(3, alu_out)  # Write ALU output to reg3
+
+        # Copy Instruction
+        # Set load and save signals based on control signals and decoders
+        self.reg.load = [
+            or_(and_(ctl[2], decoder1[i]), and_(ctl[3], i == 3)) for i in range(6)
+        ]
+        self.reg.save = [and_(ctl[2], decoder2[i]) for i in range(6)]
+        self.reg.input_load = and_(ctl[2], decoder1[6])  # Load from input
+        self.reg.output_save = and_(ctl[2], decoder2[6])  # Save to output
+
+        # Read from source and write to destination
+        data = self.reg.read()
+        self.reg.write(data)
+
+        # Compare Instruction
+        # Perform comparison and update program counter if necessary
+        compare_result = comparison(control=instruction_byte, byte=data)
+        update_counter = int(and_(ctl[3], compare_result))
+        reg0_value = int("".join(str(int(x)) for x in self.reg.registers[0]), 2)
+        self.pc = (1 - update_counter) * self.pc + update_counter * reg0_value
+
+        # Provide output if output function is given
+        if output_func:
+            output_func(self.reg.output)
+
+    def run(self, write: callable = None, read: callable = None):
         while self.pc < len(self.program):
-            #each cycle clear i/o
-            self.registers.input = [0] * 8
-            self.registers.output = [0] * 8
-            # increment program counter This is done now so as not to interfere when updated by the program
-            self.pc += 1 
-            # check if we need to write to input
-            if write_to_input:
-                self.registers.input = write_to_input()
-            self.Cycle(self, self.program[self.pc - 1])
-            # check if we need to read from output
-            if read_from_output:
-                read_from_output(self.registers.output)
+            self.exec(write, read)

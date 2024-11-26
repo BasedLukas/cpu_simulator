@@ -1,6 +1,14 @@
-from typing import List
+from typing import List, Optional
 
-
+reserved_keywords =[
+    "add",
+    "or",
+    "sub",
+    "and",
+    "eval",
+    "copy",
+    "label"
+]
 symbol_to_value = {
     'never': 0,
     '=': 1,
@@ -13,26 +21,75 @@ symbol_to_value = {
 }
 opp_to_value = {
     'add': [0, 1, 0, 0, 0, 0, 0, 0],
-    'or': [0, 1, 0, 0, 0, 0, 0, 1],
+    'or':  [0, 1, 0, 0, 0, 0, 0, 1],
     'sub': [0, 1, 0, 0, 0, 0, 1, 0],
     'and': [0, 1, 0, 0, 0, 0, 1, 1]
 }
 
 
-def assemble_binary(filename: str) -> List[List[int]]:
+
+
+def get_lines(filename: Optional[str] = None, code_string: Optional[str] = None) -> List[List[str]]:
     """
-    Reads a file and processes lines containing binary instructions.
+    Reads lines from a file or code string, removes comments and empty lines,
+    and splits lines into instructions.
+
+    Args:
+        filename (str, optional): Path to the input file containing assembly code.
+        code_string (str, optional): A string containing assembly code.
+
+    Returns:
+        List[List[str]]: A list of instructions, where each instruction is a list of strings.
+
+    Raises:
+        ValueError: If neither 'filename' nor 'code_string' is provided, or if both are provided.
+    """
+    if filename and code_string:
+        raise ValueError("provide either a file path or a code string")
+    elif filename:
+        try:
+            with open(filename, 'r') as f:
+                lines = f.readlines()
+        except Exception as e:
+            raise ValueError("Couldn't read file")
+    elif code_string:
+        # Read from a code string
+        if isinstance(code_string, str):
+            lines = code_string.strip().splitlines()
+        else:
+            raise ValueError("unable to process code string")
+    else:
+        raise ValueError("provide a valid input to assemble")
+
+    # Remove comments and empty lines
+    lines = [
+        line.split('#')[0].strip()
+        for line in lines
+        if line.strip() and not line.strip().startswith('#')
+    ]
+    # Split lines into instructions
+    instructions = [line.split() for line in lines]
+    return instructions
+
+
+
+
+def assemble_binary(filename: Optional[str] = None, code_string: Optional[str] = None) -> List[List[int]]:
+    """
+    Processes lines containing binary instructions from a file or a code string.
     Skips lines with comments or empty lines.
 
-    :param filename: Path to the input file.
-    :return: A list of lists, where each inner list represents processed binary instructions.
-    """
-    with open(filename, 'r') as f:
-        lines = f.readlines()
-    
-    lines = [line.split('#')[0].strip() for line in lines if line.strip() and not line.strip().startswith('#')]
-    lines = [line.split() for line in lines]
+    Args:
+        filename (str, optional): Path to the input file containing assembly code.
+        code_string (str, optional): A string containing assembly code.
 
+    Returns:
+        List[List[int]]: A list where each inner list represents processed binary instructions.
+
+    Raises:
+        ValueError: If neither 'filename' nor 'code_string' is provided, or if both are provided.
+    """
+    lines = get_lines(filename, code_string)
     labels = {}
     program = []
 
@@ -43,6 +100,11 @@ def assemble_binary(filename: str) -> List[List[int]]:
                 raise ValueError(f"overflow error, labels cannot be placed past instruction 63 (currently {pc}), near line {i}:{instruction}")
             if labels.get(instruction[1],None) is not None:
                 raise ValueError(f"label cannot be declared twice, near line {i}: {instruction}")
+            if len(instruction) != 2:
+                raise ValueError(f"Expected label followed by name, near line {i}:{instruction}")
+            label = instruction[1]
+            if label in reserved_keywords or label.isdigit():
+                raise ValueError(f"Cannot use {label} as a label name, near line {i}:{instruction}")
             labels[instruction[1]] = pc
         else:
             pc += 1
@@ -56,6 +118,8 @@ def assemble_binary(filename: str) -> List[List[int]]:
                 value = int(instruction[0])
                 if  0 > value > 63:
                     raise ValueError(f"immediate values cannot be larger than 63, near line {i}:{instruction}")
+                if len(instruction) != 1:
+                    raise ValueError(f"Immediate value takes no args, near line {i}:{instruction}")
                 value = [int(bit) for bit in format(value, '08b')]
                 program.append(value)
 
@@ -97,6 +161,7 @@ def assemble_binary(filename: str) -> List[List[int]]:
                     raise ValueError(
                         f"Invalid instruction near line {i}:{instruction}"
                     )
+
 
     return program
      

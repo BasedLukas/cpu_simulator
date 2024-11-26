@@ -1,17 +1,15 @@
 
-label start
-# read from input into reg1
-copy 6 1
-# add reg 1 and 2
-add
-#copy result into reg2
-copy 3 2
+1 # put 1 in reg0
+copy 0 1 # copy reg0 to reg1
 
-# loop so long as we are not negative
-start
+label start_loop
+add # add reg 1 and 2
+copy 3 2 # copy result into reg2
+
+copy 3 6 # print result
+# loop so long as result is >= 0 (using signed nums)
+start_loop
 eval >=
 
-# if we overflow print result to output
-copy 3 6
 
 

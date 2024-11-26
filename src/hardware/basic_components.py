@@ -1,6 +1,3 @@
-
-
-
 from .gates import and_, or_, not_, nand, nor, xor, xnor
 from types import SimpleNamespace as sn
 
@@ -12,7 +9,6 @@ def half_adder(input1:bool, input2:bool):
         )
 
     
-
 def full_adder(input1:bool, input2:bool, carry_in:bool):
     half_adder1 = half_adder(input1, input2)
     half_adder2 = half_adder(half_adder1.sum, carry_in)
