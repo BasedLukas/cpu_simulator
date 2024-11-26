@@ -63,16 +63,17 @@ class CPU:
         decoder2 = decode(instruction_byte[5:8])
 
         #immediate
-        if ctl[0]:
-            self.reg.save[0] = ctl[0]
-            self.reg.write(instruction_byte)
+        self.reg.save[0] = ctl[0]
+        self.reg.write(instruction_byte)
+
         # operate
-        if ctl[1]:
-            #The ALU is permanently connected to the first two registers, so we don't set the load and save signals
-            alu_out = alu(self.reg.registers[1], self.reg.registers[2],instruction_byte[6],instruction_byte[7]).out
-            # activate reg3 save signal
-            self.reg.save[3] = ctl[1]
-            self.reg.write(alu_out)
+        #The ALU is permanently connected to the first two registers, so we don't set the load and save signals
+        alu_out = alu(self.reg.registers[1], self.reg.registers[2],instruction_byte[6],instruction_byte[7]).out
+        # activate reg3 save signal if operate
+        self.reg.save[3] = ctl[1]
+        # ALU should not write to the bus, but only to reg3
+        self.reg.write_to_register(3, alu_out)
+
         #copy
         if ctl[2]:
             # Set the save and load signals for the registers
