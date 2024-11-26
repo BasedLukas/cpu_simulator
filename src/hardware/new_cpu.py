@@ -44,7 +44,7 @@ class CPU:
         self.pc = 0
         self.reg = Registers()
 
-    def exec(self, input_func, output_func):
+    def exec(self, input_func=None, output_func=None):
         # Reset load and save signals
         self.reg.load = [0] * 6
         self.reg.save = [0] * 6

@@ -1,6 +1,7 @@
 
 from .gates import and_, or_, not_
-from .basic_components import AddSub, Mux8Bit
+from .basic_components import add_sub as AddSub
+from .basic_components import mux_8bit 
 
 
 
@@ -68,22 +69,22 @@ def alu(input1: list[bool], input2: list[bool], control1: bool, control2: bool):
 
     # Perform addition or subtraction based on control1
     add_sub = AddSub(input1, input2, control1)
-    add_sub_out = add_sub.output()  # If control1 == True then subtract else add
+    add_sub_out = add_sub.output  # If control1 == True then subtract else add
 
-    add_sub_overflow = add_sub.overflow()      # Used when doing addition
-    add_sub_borrow_out = add_sub.borrow_out()  # Used when doing subtraction (in2 > in1)
+    add_sub_overflow = add_sub.overflow     # Used when doing addition
+    add_sub_borrow_out = add_sub.borrow_out  # Used when doing subtraction (in2 > in1)
 
     # Perform bitwise AND and OR operations
     and_out = [and_(in1, in2) for in1, in2 in zip(input1, input2)]
     or_out = [or_(in1, in2) for in1, in2 in zip(input1, input2)]
 
     # First Mux: selects between AND and OR outputs based on control1
-    and_or_mux = Mux8Bit(and_out, or_out, control1)
-    and_or_mux_out = and_or_mux.output()
+    and_or_mux_out = mux_8bit(and_out, or_out, control1)
+    # and_or_mux_out = and_or_mux.output
 
     # Second Mux: selects between add/sub output and and/or output based on control2
-    final_mux = Mux8Bit(and_or_mux_out, add_sub_out, control2)
-    alu_output = final_mux.output()
+    final_mux = mux_8bit(and_or_mux_out, add_sub_out, control2)
+    alu_output = final_mux
 
     # Function to determine if all bits in output are zero
     def zero():
@@ -173,5 +174,4 @@ def alu(input1: list[bool], input2: list[bool], control1: bool, control2: bool):
 #         """"returns True if the number is overflowed when doing subtraction (in2 > in1)"""
 #         return self.add_sub_borrow_out
     
-
 

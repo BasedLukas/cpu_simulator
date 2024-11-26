@@ -32,3 +32,6 @@ class Registers:
 
                 self.output = data
 
+    def write_to_register(self, register, data):
+        if self.save[register]:
+            self.registers[register] = data
