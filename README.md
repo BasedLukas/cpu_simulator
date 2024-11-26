@@ -5,11 +5,12 @@ This project emulates an 8 bit CPU using simulated logic gates. All the operatio
  
  <img src="./docs/full_cpu.png" width="600">
  
-Usage  
+# Usage  
 ```
 git clone https://github.com/BasedLukas/cpu_simulator.git
-cd src
+cd cpu_simulator
 pip install pygame
+cd src
 python maze_run.py
 ```
 Watch the cpu control a robot in a maze. The (red) robot sees one square ahead (green), and is controlled by the robot.asm program.  
