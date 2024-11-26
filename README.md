@@ -13,9 +13,9 @@ pip install pygame
 cd src
 python maze_run.py
 ```
-Watch the cpu control a robot in a maze. The (red) robot sees one square ahead (green), and is controlled by the robot.asm program.  
+Watch the cpu control a robot in a maze. The (red) robot sees one square ahead (green), and is controlled by the `robot.asm` program.  
 Can you solve the maze?  
-You can also access the CPU directly from run.py to run a program of your choice.  
+You can also access the CPU directly from `run.py` to run a program of your choice.  
 
 ![](./docs/maze.gif)  
 
