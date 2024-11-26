@@ -1,16 +1,18 @@
 
 # 8 bit CPU emulator
 
-This project emulates an 8 bit CPU using only logic gates and building upwards. All the operations are based on the underlying properties of the logic gates, and changing their operation leads to corresponding changes in function.  
+This project emulates an 8 bit CPU using simulated logic gates. All the operations and control flow are based on the underlying properties of the logic gates, and changing their operation leads to corresponding changes in function.  
  
  <img src="./docs/full_cpu.png" width="600">
  
 Usage  
 ```
+git clone https://github.com/BasedLukas/cpu_simulator.git
+cd src
 pip install pygame
 python maze_run.py
 ```
-To see the cpu control a robot in a maze. The robot sees one square ahead, and is controlled by the robot.asm program.  
+Watch the cpu control a robot in a maze. The (red) robot sees one square ahead (green), and is controlled by the robot.asm program.  
 Can you solve the maze?  
 You can also access the CPU directly from run.py to run a program of your choice.  
 
@@ -77,18 +79,19 @@ copy 3 6
 To write input and read output from the CPU pass it in as a callable.  
 ```
 from hardware.cpu import CPU
-from assembler import assemble_binary
+from assembler.assembler import assemble_binary
 
-program = assemble_binary('program.asm')
+program = assemble_binary("program.asm")
 
-# funtions to be passed to the cpu
-def write_to_input():
-    return [0,0,0,0,0,0,0,1]
-def read_from_output(value):
-    if value != [0,0,0,0,0,0,0,0]: # CPU always returns 0 by default
-        print('result:',value)
+# Function to read output from the CPU
+def print_result(value):
+    # Convert binary list to integer and print result
+    result = int(''.join(map(str, value)), 2)
+    if result != 0:
+        print('Result:', result)
 
+# Initialize and run the CPU
 cpu = CPU(program)
-cpu.run(write_to_input=write_to_input, read_from_output=read_from_output)
+cpu.run(read=print_result)
 ```
 

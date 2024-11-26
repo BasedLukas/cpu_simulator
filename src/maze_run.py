@@ -8,8 +8,8 @@ if __name__ == "__main__":
     program = assemble_binary('robot.asm')
     cpu = CPU(program)
     cpu.run(
-        write_to_input=robot.get_front_cell_bit,
-        read_from_output=robot.move
+        write=robot.get_front_cell_bit,
+        read=robot.move
     )
 
 

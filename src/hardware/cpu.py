@@ -113,5 +113,7 @@ class CPU:
             output_func(self.reg.output)
 
     def run(self, write: callable = None, read: callable = None):
+        """write: function to write to the cpu input
+        read: function to read from cpu output"""
         while self.pc < len(self.program):
             self.exec(write, read)
