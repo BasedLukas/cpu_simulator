@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebAssembly Test</title>
+</head>
+<body>
+    <h1>WebAssembly Functions</h1>
+
+    <!-- Input for CPU Function -->
+    <h2>CPU Function</h2>
+    <textarea id="cpuInput" rows="4" cols="50" placeholder='[[0, 0, 1, 1, 1, 1, 1, 1]]'></textarea>
+    <button id="runCpu">Run CPU</button>
+    <pre id="cpuResult">CPU Result: </pre>
+
+
+    <!-- Include the bundled JavaScript -->
+    <script type="module" src="dist/bundle.js"></script>
+
+    <script>
+        // Wait for the DOM to load
+        document.addEventListener("DOMContentLoaded", () => {
+            // CPU Function
+            document.getElementById("runCpu").addEventListener("click", () => {
+                const cpuInput = document.getElementById("cpuInput").value; // User input
+                try {
+
+                    const result = window.cpu(cpuInput); // Call the CPU function
+                    document.getElementById("cpuResult").textContent = `CPU Result: ${result}`;
+                } catch (error) {
+                    document.getElementById("cpuResult").textContent = `Error: ${error.message}`;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

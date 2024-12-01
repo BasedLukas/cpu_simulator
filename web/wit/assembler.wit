@@ -1,0 +1,8 @@
+package componentize-py:init;
+
+
+world assembler {
+
+  export assemblebinary: func(program: string) -> string;
+
+}

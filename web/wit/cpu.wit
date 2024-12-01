@@ -1,0 +1,8 @@
+package componentize-py:init;
+
+
+world cpuworld {
+
+  export cpuinit: func(program: string) -> string;
+
+}
