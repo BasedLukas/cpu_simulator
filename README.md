@@ -8,11 +8,11 @@ This project emulates an 8 bit CPU using simulated logic gates. All the operatio
 # Usage  
 ```
 git clone https://github.com/BasedLukas/cpu_simulator.git
-cd cpu_simulator
 pip install pygame
-cd src
+cd cpu_simulator/src
 python maze_run.py
 ```
+The cpu and assembler themselves have no dependencies. The maze requires pygame.
 Watch the cpu control a robot in a maze. The (red) robot sees one square ahead (green), and is controlled by the `robot.asm` program.  
 Can you solve the maze?  
 You can also access the CPU directly from `run.py` to run a program of your choice.  

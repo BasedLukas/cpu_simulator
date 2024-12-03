@@ -1,8 +1,9 @@
 package componentize-py:init;
 
 
-world assembler {
+world emulator {
 
   export assemblebinary: func(program: string) -> string;
+  export cpuinit: func(program: string) -> string;
 
 }
