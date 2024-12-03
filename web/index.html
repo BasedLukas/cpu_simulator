@@ -1,38 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebAssembly Test</title>
+    <title>Load Wheel in Pyodide</title>
 </head>
 <body>
-    <h1>WebAssembly Functions</h1>
+    <h1>Pyodide Wheel Loading Example</h1>
+    <div id="output">Loading...</div>
 
-    <!-- Input for CPU Function -->
-    <h2>CPU Function</h2>
-    <textarea id="cpuInput" rows="4" cols="50" placeholder='[[0, 0, 1, 1, 1, 1, 1, 1]]'></textarea>
-    <button id="runCpu">Run CPU</button>
-    <pre id="cpuResult">CPU Result: </pre>
+    <!-- Include Pyodide -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+    <script type="text/javascript">
+        async function main() {
+            let pyodide = await loadPyodide();
+            document.getElementById('output').innerText = 'Pyodide loaded. Installing package...';
+            await pyodide.loadPackage("micropip")
+            // await pyodide.loadPackage("setuptools")
+            let response = await fetch('dist/cpu-0.1.0-py3-none-any.whl');
+            let buffer = await response.arrayBuffer();
+            pyodide.FS.writeFile('cpu-0.1.0-py3-none-any.whl', new Uint8Array(buffer));
+            await pyodide.runPythonAsync(`
+import micropip
+await micropip.install('dist/cpu-0.1.0-py3-none-any.whl')
+from assembler.assembler import assemble_binary
+from hardware.cpu import CPU
 
+# Define the program string
+program = "7\\ncopy 0 6\\n"
 
-    <!-- Include the bundled JavaScript -->
-    <script type="module" src="dist/bundle.js"></script>
+# Assemble the program into binary
+program = assemble_binary(code_string=program)
+print(program)
+# Create a CPU instance and run the program
+cpu = CPU(program)
+print(cpu)
+cpu.run()
+result = cpu.reg.output
 
-    <script>
-        // Wait for the DOM to load
-        document.addEventListener("DOMContentLoaded", () => {
-            // CPU Function
-            document.getElementById("runCpu").addEventListener("click", () => {
-                const cpuInput = document.getElementById("cpuInput").value; // User input
-                try {
-
-                    const result = window.cpu(cpuInput); // Call the CPU function
-                    document.getElementById("cpuResult").textContent = `CPU Result: ${result}`;
-                } catch (error) {
-                    document.getElementById("cpuResult").textContent = `Error: ${error.message}`;
-                }
-            });
-        });
+print("Program result:", result)
+`);
+            document.getElementById('output').innerText = 'Package installed. Running code...';
+            // Retrieve the result from Python
+            let result = pyodide.globals.get('result');
+            document.getElementById('output').innerText = result;
+        }
+        main();
     </script>
 </body>
 </html>

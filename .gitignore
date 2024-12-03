@@ -7,3 +7,7 @@ node_modules
 web/assembler
 web/cpu
 web/dist
+**.egg-info
+web/build
+web/dist
+web/*.wasm
