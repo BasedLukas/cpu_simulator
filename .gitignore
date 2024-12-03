@@ -4,8 +4,7 @@ venv
 **/__pycache__/
 **.pytest_cache
 node_modules
-web/assembler
-web/cpu
+web/emulator
 web/dist
 **.egg-info
 web/build

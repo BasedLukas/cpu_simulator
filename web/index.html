@@ -1,50 +1,117 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>Load Wheel in Pyodide</title>
-</head>
-<body>
-    <h1>Pyodide Wheel Loading Example</h1>
-    <div id="output">Loading...</div>
-
-    <!-- Include Pyodide -->
+    <title>Robot Maze with User Input</title>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+</head>
+
+
+<body>
+    <h1>Robot Maze</h1>
+    <textarea id="assemblyCode" rows="10" cols="50">
+        # 1 = turn left, 2=  turn right, 3=  step forward
+
+        start
+        eval always
+        
+        ### routines ###
+        
+        label uturn
+        2
+        copy 0 6
+        copy 0 6
+        start
+        eval always
+        
+        label right 
+        2
+        copy 0 6
+        start
+        eval always
+        
+        label left
+        1
+        copy 0 6
+        start
+        eval always
+        
+        
+        ### start main loop ###
+        
+        # take a step forwards
+        label start
+        3
+        copy 0 6
+        
+        # check if wall to the left store in 3
+        1
+        copy 0 6
+        copy 6 3
+        2           # turn back to original direction
+        copy 0 6
+        
+        # if no wall left, turn left until there is a wall. We follow wall on our left side
+        left 
+        eval =
+        
+        # there is a wall left, check ahead
+        copy 6 1
+        # check right
+        2
+        copy 0 6
+        copy 6 2
+        1 
+        copy 0 6
+        # if wall ahead and right do a uturn
+        and
+        uturn
+        eval !=
+        
+        # if wall ahead but no wall right turn right
+        copy 1 3
+        right
+        eval !=
+        
+        start
+        eval always 
+    </textarea>
+    <br>
+    <button id="runButton">Run</button>
+    <canvas id="mazeCanvas" width="400" height="400"></canvas>
+    <p id="output"></p>
+
     <script type="text/javascript">
+        async function fetchDocumentAsString(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const text = await response.text();
+                return text;
+            } catch (error) {
+                console.error('Error fetching document:', error);
+                throw error;
+            }
+        }
+            
         async function main() {
             let pyodide = await loadPyodide();
+            await pyodide.loadPackage("micropip");
             document.getElementById('output').innerText = 'Pyodide loaded. Installing package...';
-            await pyodide.loadPackage("micropip")
-            // await pyodide.loadPackage("setuptools")
-            let response = await fetch('dist/cpu-0.1.0-py3-none-any.whl');
-            let buffer = await response.arrayBuffer();
-            pyodide.FS.writeFile('cpu-0.1.0-py3-none-any.whl', new Uint8Array(buffer));
-            await pyodide.runPythonAsync(`
-import micropip
-await micropip.install('dist/cpu-0.1.0-py3-none-any.whl')
-from assembler.assembler import assemble_binary
-from hardware.cpu import CPU
-
-# Define the program string
-program = "7\\ncopy 0 6\\n"
-
-# Assemble the program into binary
-program = assemble_binary(code_string=program)
-print(program)
-# Create a CPU instance and run the program
-cpu = CPU(program)
-print(cpu)
-cpu.run()
-result = cpu.reg.output
-
-print("Program result:", result)
-`);
-            document.getElementById('output').innerText = 'Package installed. Running code...';
-            // Retrieve the result from Python
-            let result = pyodide.globals.get('result');
-            document.getElementById('output').innerText = result;
+            await pyodide.runPythonAsync(await fetchDocumentAsString('prerender.py'));
+            await pyodide.runPythonAsync(await fetchDocumentAsString('render.py'));
+    
+            // Expose the run_simulation function to JavaScript
+            const run_simulation = pyodide.globals.get('run_simulation');
+    
+            // Add event listener to the Run button
+            document.getElementById('runButton').addEventListener('click', () => {
+                run_simulation();
+            });
         }
         main();
-    </script>
+        </script>
+
 </body>
 </html>

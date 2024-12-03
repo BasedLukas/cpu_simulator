@@ -1,5 +1,4 @@
-import {cpuinit} from "./cpu/cpu_module.js";
-import {assemblebinary} from "./assembler/assembler_module.js";
+import {assemblebinary, cpuinit,} from "./emulator/emulator.js";
 
 console.log(cpuinit);
 const program = assemblebinary("7\ncopy 0 1\ncopy 1 6");

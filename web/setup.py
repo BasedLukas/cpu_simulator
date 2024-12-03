@@ -10,6 +10,6 @@ setup(
     package_dir={'': '../src'},              # Root for packages is 'src'
     include_package_data=False,  # Include package data as specified in MANIFEST.in
     package_data={
-        # 'cpu': ['*.py', '*.md', '*.asm'],
+        'cpu': ['*.asm'],
     },
 )

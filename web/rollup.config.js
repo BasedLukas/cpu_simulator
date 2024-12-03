@@ -13,8 +13,7 @@ export default {
         commonjs(), // Convert CommonJS modules to ES modules
         copy({
             targets: [
-                { src: "cpu/*.wasm", dest: "dist" }, // Copy .wasm files to dist
-                { src: "assembler/*.wasm", dest: "dist"}
+                { src: "emulator/*.wasm", dest: "dist" }, // Copy .wasm files to dist
             ],
         }),
     ],

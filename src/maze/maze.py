@@ -1,7 +1,11 @@
+
 import pygame
 import sys
 import time
+import os
 
+from hardware.cpu import CPU
+from assembler.assembler import assemble_binary
 
 CELL_SIZE = 50
 WHITE = (255, 255, 255)
@@ -131,4 +135,15 @@ def draw(robot:Robot ,delay=0.01):
     time.sleep(delay)
 
 
+def run_maze():
+    current_file = os.path.abspath(__file__)
+    current_dir = os.path.dirname(current_file)
+    relative_path = os.path.join(current_dir, "robot.asm")
+    robot = Robot()
+    program = assemble_binary(relative_path)
+    cpu = CPU(program)
+    cpu.run(
+        write=robot.get_front_cell_bit,
+        read=robot.move
+    )
 

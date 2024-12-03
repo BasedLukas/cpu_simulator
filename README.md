@@ -9,7 +9,7 @@ This project emulates an 8 bit CPU using simulated logic gates. All the operatio
 ```
 git clone https://github.com/BasedLukas/cpu_simulator.git
 pip install pygame
-cd cpu_simulator/src
+cd cpu_simulator
 python maze_run.py
 ```
 The cpu and assembler themselves have no dependencies. The maze requires pygame.
