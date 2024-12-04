@@ -1,3 +1,3 @@
-from maze.maze import run_maze
+from maze.run_pygame import run_maze
 
 run_maze()
