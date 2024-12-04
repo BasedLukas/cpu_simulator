@@ -8,7 +8,6 @@ from maze.game import Robot, maze, CELL_SIZE
 
 
 
-
 def run_maze():
     pygame.init()
     window = pygame.display.set_mode((len(maze[0])*CELL_SIZE, len(maze)*CELL_SIZE))

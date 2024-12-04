@@ -11,5 +11,6 @@ setup(
     include_package_data=False,  # Include package data as specified in MANIFEST.in
     package_data={
         'cpu': ['*.asm'],
+        'maze':['*.asm']
     },
 )

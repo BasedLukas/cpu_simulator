@@ -61,9 +61,15 @@ def test_invalid():
     # Test instructions with numbers out of range
     out_of_range = """
     # Invalid 'copy' instructions with numbers out of valid range
-    copy 7 0
-    copy 0 8
     copy -1 3
+    """
+    with pytest.raises(Exception):
+        assemble_binary(code_string=out_of_range)
+
+        # Test instructions with numbers out of range
+    out_of_range = """
+    # Invalid 'copy' instructions with numbers out of valid range
+    copy 0 8
     """
     with pytest.raises(Exception):
         assemble_binary(code_string=out_of_range)
@@ -76,6 +82,13 @@ def test_invalid():
     """
     with pytest.raises(Exception):
         assemble_binary(code_string=too_few_args)
+
+
+def test_immediate():
+    too_large = "64"
+    with pytest.raises(Exception):
+        assemble_binary(too_large)
+
 
 
 def test_label():

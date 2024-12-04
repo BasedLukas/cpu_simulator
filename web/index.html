@@ -2,82 +2,78 @@
 <html>
 <head>
     <title>Robot Maze with User Input</title>
+    <!-- Bootstrap CSS -->
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- Pyodide -->
     <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
 </head>
 <body>
-    <h1>Robot Maze</h1>
-    <textarea id="assemblyCode" rows="10" cols="50">
-# 1 = turn left, 2 = turn right, 3 = step forward
+    <div class="container">
+        <h1 class="text-center">Robot Maze</h1>
+        <textarea id="assemblyCode" class="form-control" rows="10">
+# output controls:
+# 1 == turn left | 2 == turn right | 3 == step forward
 
-start
-eval always
+# input observations:
+# 1 == wall | 0 == clear
 
-### routines ###
-
-label uturn
-2
-copy 0 6
-copy 0 6
-start
-eval always
-
-label right 
-2
-copy 0 6
-start
-eval always
-
-label left
+# this wil rotate you left
+# put 1 in reg0, then copy it to reg6  (reg6 is output)
 1
 copy 0 6
-start
-eval always
 
-### start main loop ###
+# this wil rotate you right 3 times
+# put 2 in reg0
+2       
+copy 0 6 
+copy 0 6
+copy 0 6
 
-# take a step forwards
-label start
+# walk in a line until you hit a wall
+# create a labeled jumping point
+label start_loop
 3
 copy 0 6
+copy 6 3 # copy from input into reg3
+start_loop
+eval =  # goto start_loop if reg3 == 0 (if not blocked)
 
-# check if wall to the left store in 3
-1
-copy 0 6
-copy 6 3
-2           # turn back to original direction
-copy 0 6
 
-# if no wall left, turn left until there is a wall. We follow wall on our left side
-left 
-eval =
 
-# there is a wall left, check ahead
-copy 6 1
-# check right
-2
-copy 0 6
-copy 6 2
-1 
-copy 0 6
-# if wall ahead and right do a uturn
-and
-uturn
-eval !=
+</textarea>
+        <p id="errorOutput" style="color: red;"></p>
 
-# if wall ahead but no wall right turn right
-copy 1 3
-right
-eval !=
+        <div class="text-center button-group d-flex justify-content-center align-items-center">
+            <button id="runButton" class="btn btn-primary">Run</button>
+            <button id="stopButton" class="btn btn-secondary">Stop/Reset</button>
+            <button id="solutionButton" class="btn btn-info">Show Solution</button>
+            <div class="delay-input-group ms-3">
+                <label for="delay">  Delay:</label>
+                <textarea id="delay" class="form-control small-textarea">0.1</textarea>
+            </div>
+        </div>
+        
+        
+        
+        <!-- Canvas Container -->
+        <div id="canvasContainer">
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator">
+                <span>Loading...</span>
+            </div>
+            <!-- Maze Canvas -->
+            <canvas id="mazeCanvas"></canvas>
+        </div>
+        <p id="output"></p>
+    </div>
 
-start
-eval always 
-    </textarea>
-    <br>
-    <button id="runButton">Run</button>
-    <button id="stopButton">Stop/Reset</button>
-    <canvas id="mazeCanvas" width="400" height="400"></canvas>
-    <p id="output"></p>
-
+    <!-- jQuery -->
+    <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <!-- Custom Script -->
     <script src="script.js"></script>
 </body>
 </html>

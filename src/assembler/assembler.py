@@ -116,7 +116,8 @@ def assemble_binary(filename: Optional[str] = None, code_string: Optional[str] =
 
             case _ if instruction[0].isdigit():
                 value = int(instruction[0])
-                if  0 > value > 63:
+                valid_immediate = range(0,64)
+                if  value not in valid_immediate:
                     raise ValueError(f"immediate values cannot be larger than 63, near line {i}:{instruction}")
                 if len(instruction) != 1:
                     raise ValueError(f"Immediate value takes no args, near line {i}:{instruction}")
@@ -128,7 +129,8 @@ def assemble_binary(filename: Optional[str] = None, code_string: Optional[str] =
                     raise ValueError(f"incorrect copy instruction, near line {i}: {instruction}")
                 source = int(instruction[1])
                 destination = int(instruction[2])
-                if 0 > source > 6 or 0 > destination > 6:
+                valid_range = range(0,7)
+                if source not in valid_range or destination not in valid_range:
                     raise ValueError(f"copy src dest, must be between 0-6 near line {i}: {instruction}")
                 copy_instruction = [1, 0]
                 src = [int(bit) for bit in format(source, '03b')]

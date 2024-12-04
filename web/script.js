@@ -13,25 +13,20 @@ async function fetchDocumentAsString(url) {
 }
 
 async function main() {
+    
     let pyodide = await loadPyodide();
     await pyodide.loadPackage("micropip");
     document.getElementById('output').innerText = 'Pyodide loaded. Installing package...';
-
+    
     // Load and run the initialization Python code
-    await pyodide.runPythonAsync(await fetchDocumentAsString('main.py'));
-
-
-    // Expose the run_game function to JavaScript
-    const run_game = pyodide.globals.get('run_game');
-    const stop_game = pyodide.globals.get('stop_game');
-
-    // Add event listeners to the buttons
-    document.getElementById('runButton').addEventListener('click', () => {
-        run_game();
+    pyodide.runPythonAsync(await fetchDocumentAsString('main.py'));
+    document.getElementById("solutionButton").addEventListener("click", () => {
+        document.getElementById("assemblyCode").value = pyodide.globals.get("solution_code");
     });
+    document.getElementById('output').innerText = 'Loaded';
+    // once loaded show maze
+    document.getElementById('loadingIndicator').style.display = 'none';
+    document.getElementById('mazeCanvas').style.display = 'block';
 
-    document.getElementById('stopButton').addEventListener('click', () => {
-        stop_game();
-    });
 }
-main();
+main()
