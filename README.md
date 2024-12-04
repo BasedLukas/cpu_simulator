@@ -6,7 +6,7 @@ This project emulates an 8 bit CPU using simulated logic gates. All the operatio
  <img src="./docs/full_cpu.png" width="600">
  
 # Usage  
-```
+```bash
 git clone https://github.com/BasedLukas/cpu_simulator.git
 pip install pygame
 cd cpu_simulator
@@ -14,15 +14,22 @@ python maze_run.py
 ```
 The cpu and assembler themselves have no dependencies. The maze requires pygame.
 Watch the cpu control a robot in a maze. The (red) robot sees one square ahead (green), and is controlled by the `robot.asm` program.  
-Can you solve the maze?  
-You can also access the CPU directly from `run.py` to run a program of your choice.  
+
+To interact directly with the cpu and write your own assembly code:
+```bash
+cd web
+pip install wheel
+python setup.py bdist_wheel
+python -m http.server
+```
+Visit localhost:8000 to view code in browser. Can you solve the maze? 
 
 ![](./docs/maze.gif)  
 
   
 # Design
 
-There are 6 registers, an input and an output. There is an ALU that can add, subract, and, or. We can also perform comparisons.
+There are 6 registers, an input and an output. There is an ALU that can ADD, SUB, AND, OR. You can also perform comparisons.
 
 #### Code
 Move a value into reg0.
@@ -72,11 +79,12 @@ copy 3 2
 start
 eval >=
 
-# if we overflow print result to output
+# when we overflow print result to output
 copy 3 6
 
 ```
-  
+#### Modifying
+
 To write input and read output from the CPU pass it in as a callable.  
 ```
 from hardware.cpu import CPU

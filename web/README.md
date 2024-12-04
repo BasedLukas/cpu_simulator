@@ -4,13 +4,15 @@ There are 2 ways to build, with wasm components or for pyodide.
 
 1) for pyodide wheel 
     run from `web/`
-    `pip install wheel`
-    `python setup.py bdist_wheel`
-    `python -m http.server`
+    ```
+    pip install wheel
+    python setup.py bdist_wheel
+    python -m http.server
+    ```
     visit localhost to view code in browser
 
 
-2) for WASM components 
+2) for WASM components (not recommended)
     (run from project root)
     compile to wasm
     `componentize-py -d web/wit -w emulator componentize web.emulator_module -o web/emulator.wasm`
