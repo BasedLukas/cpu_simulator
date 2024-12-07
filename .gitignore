@@ -10,3 +10,5 @@ web/dist
 web/build
 web/dist
 web/*.wasm
+web/pygame/
+web/package-lock.json

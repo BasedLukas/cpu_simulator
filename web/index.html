@@ -9,66 +9,180 @@
     <!-- Pyodide -->
     <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
 </head>
-<body>
-    <div class="container">
-        <h1 class="text-center">Robot Maze</h1>
-        <textarea id="assemblyCode" class="form-control" rows="10">
-# output controls:
-# 1 == turn left | 2 == turn right | 3 == step forward
-
-# input observations:
-# 1 == wall | 0 == clear
-
-# this wil rotate you left
-# put 1 in reg0, then copy it to reg6  (reg6 is output)
-1
-copy 0 6
-
-# this wil rotate you right 3 times
-# put 2 in reg0
-2       
-copy 0 6 
-copy 0 6
-copy 0 6
-
-# walk in a line until you hit a wall
-# create a labeled jumping point
-label start_loop
-3
-copy 0 6
-copy 6 3 # copy from input into reg3
-start_loop
-eval =  # goto start_loop if reg3 == 0 (if not blocked)
-
-
-
-</textarea>
-        <p id="errorOutput" style="color: red;"></p>
-
-        <div class="text-center button-group d-flex justify-content-center align-items-center">
-            <button id="runButton" class="btn btn-primary">Run</button>
-            <button id="stopButton" class="btn btn-secondary">Stop/Reset</button>
-            <button id="solutionButton" class="btn btn-info">Show Solution</button>
-            <div class="delay-input-group ms-3">
-                <label for="delay">  Delay:</label>
-                <textarea id="delay" class="form-control small-textarea">0.1</textarea>
-            </div>
-        </div>
+<div class="robot-maze">
+    <script rel="preload" src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+    <script>
+    async function fetchDocumentAsString(url) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            const text = await response.text();
+            return text;
+        } catch (error) {
+            console.error('Error fetching document:', error);
+            throw error;
+        }
+    }
+    
+    async function main() {
+        let pyodide = await loadPyodide();
+        await pyodide.loadPackage("micropip");
+        document.getElementById('output').innerText = 'Pyodide loaded. Installing package...';
         
+        // Load and run the initialization Python code
+        pyodide.runPythonAsync(await fetchDocumentAsString('main.py'));
+        document.getElementById("solutionButton").addEventListener("click", () => {
+            document.getElementById("assemblyCode").value = pyodide.globals.get("solution_code");
+        });
+        document.getElementById('output').innerText = 'Loaded';
+        // once loaded show maze
+        document.getElementById('loadingIndicator').style.display = 'none';
+        document.getElementById('mazeCanvas').style.display = 'block';
+    
+    }
+    main()
+    </script>
+    <style>
+        /* Container wraps everything at maze width */
+        .maze-wrapper {
+            display: inline-block;
+            position: relative;
+        }
+    
+        /* Make maze responsive and controlled by CSS */
+        #canvasContainer {
+            position: relative;
+            width: 600px; /* Adjust as needed */
+            height: 400px; /* Adjust as needed */
+            margin: 0 auto;
+        }
+    
+        /* Loading indicator placed over canvas, same size */
+        #loadingIndicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f0f0f0;
+            z-index: 10;
+        }
+    
+        /* Maze canvas fills parent container */
+        #mazeCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+    
+        /* Code area matches maze width but remains resizable */
+        #assemblyContainer {
+            width: 600px; /* Match maze width */
+            margin: 20px auto;
+        }
+        #assemblyCode {
+            width: 100%;
+            box-sizing: border-box;
+            resize: both;
+            min-height: 250px;
+        }
+    
+        /* Buttons and delay input arranged in a single row */
+        .controls-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px auto;
+            width: 600px;
+        }
+    
+        .controls-row > * {
+            margin: 0 5px;
+        }
+    
+        /* Make buttons uniform size */
+        .controls-row button {
+            flex: 1;
+            min-width: 80px;
+        }
+    
+        /* Delay input styled as a number input with small step buttons */
+        .delay-group {
+            display: flex;
+            align-items: center;
+        }
         
+        .delay-group label {
+            margin-right: 5px;
+        }
         
-        <!-- Canvas Container -->
+        .delay-group input[type=number] {
+            width: 80px;
+            text-align: center;
+        }
+    
+    
+        body {
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+    
+        #output {
+            margin-top: 20px;
+        }
+    </style>
+    <div class="maze-wrapper">
         <div id="canvasContainer">
-            <!-- Loading Indicator -->
-            <div id="loadingIndicator">
-                <span>Loading...</span>
-            </div>
-            <!-- Maze Canvas -->
+            <div id="loadingIndicator"><span>Loading...</span></div>
             <canvas id="mazeCanvas"></canvas>
         </div>
-        <p id="output"></p>
     </div>
-
+    <div id="assemblyContainer">
+        <textarea id="assemblyCode" class="form-control">
+    # output controls:
+    # 1 == turn left | 2 == turn right | 3 == step forward
+    
+    # input observations:
+    # 1 == wall | 0 == clear
+    
+    # this will rotate you left
+    1
+    copy 0 6
+    
+    # rotate right 3 times
+    2
+    copy 0 6
+    copy 0 6
+    copy 0 6
+    
+    # walk in a line until blocked
+    label start_loop
+    3
+    copy 0 6
+    copy 6 3
+    start_loop
+    eval = 
+        </textarea>
+    </div>
+    <div class="controls-row">
+        <button id="runButton" class="btn btn-primary">Run</button>
+        <button id="stopButton" class="btn btn-secondary">Reset</button>
+        <button id="solutionButton" class="btn btn-info">Solution</button>
+        <div class="delay-group">
+            <label for="delay">Delay:</label>
+            <input id="delay" type="number" value="0.1" class="form-control delay-input" />
+        </div>
+    </div>
+    <p id="errorOutput" style="color: red;"></p>
+    <p id="output"></p>
+    </div>
+    
     <!-- jQuery -->
     <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
     <!-- Bootstrap JS -->

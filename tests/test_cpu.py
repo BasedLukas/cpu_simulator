@@ -119,3 +119,37 @@ def test_overflow_math():
     assert cpu.alu.overflow == cpu.alu.zero == True, cpu.alu #TODO should thi carry out be high here?
 
 
+def test_sub_math():
+    code = """
+    2
+    copy 0 2
+    sub  # 0 - 2 = -2
+    copy 3 6
+    """
+    program = assemble_binary(code_string=code)
+    cpu = CPU(program)
+    cpu.run()
+    assert cpu.reg.output == [1,1,1,1,1,1,1,0], cpu.reg.output
+    # assert to_int(cpu.reg.output) == -2, f"cpu.reg.output should be zero due to overflow: {cpu.reg.output}" #to int doesnt do negative
+
+def test_add_sub_math():
+    code = """
+    32
+    copy 0 1
+    32
+    copy 0 2
+    add  # 64 in reg 3
+    copy 3 2
+    copy 3 1
+    add # 128 in reg 3
+    1
+    copy 0 2
+    copy 3 1
+    sub     # 128 - 1
+    copy 3 6
+    """
+    program = assemble_binary(code_string=code)
+    cpu = CPU(program)
+    cpu.run()
+    assert cpu.reg.output == [0,1,1,1,1,1,1,1] 
+    assert to_int(cpu.reg.output) == 127
