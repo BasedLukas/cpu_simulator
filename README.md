@@ -22,7 +22,7 @@ pip install wheel
 python setup.py bdist_wheel
 python -m http.server
 ```
-Visit localhost:8000 to view code in browser. Can you solve the maze? 
+Visit localhost:8000 to write your own assembly code in the browser. Can you solve the maze? 
 
 ![](./docs/maze.gif)  
 
